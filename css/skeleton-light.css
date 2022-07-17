@@ -40,6 +40,7 @@
   padding: 0 20px;
   box-sizing: border-box;
 }
+
 .column {
   position: center;
   width: 100%;
@@ -60,10 +61,12 @@
   .container {
     width: 80%;
   }
+
   .column,
   .columns {
     margin-left: 0;
   }
+
   .column:first-child,
   .columns:first-child {
     margin-left: 0;
@@ -80,6 +83,7 @@ html {
   font-size: 100%;
   color-scheme: light;
 }
+
 body {
   font-size: 18px;
   line-height: 24px;
@@ -95,6 +99,7 @@ h1 {
   margin-bottom: 16px;
   font-weight: 800;
 }
+
 h1 {
   font-size: 24px;
   line-height: 64px;
@@ -118,6 +123,7 @@ p {
 a {
   color: #0085ff;
 }
+
 a:hover {
   color: #0085ff;
 }
@@ -133,7 +139,8 @@ code {
   border: 1px solid #e1e1e1;
   border-radius: 4px;
 }
-pre > code {
+
+pre>code {
   display: block;
   padding: 1rem 1.5rem;
   white-space: pre;
@@ -145,12 +152,14 @@ button,
 .button {
   margin-bottom: 1rem;
 }
+
 input,
 textarea,
 select,
 fieldset {
   margin-bottom: 1.5rem;
 }
+
 pre,
 blockquote,
 dl,
@@ -166,13 +175,16 @@ ol {
   width: 100%;
   box-sizing: border-box;
 }
+
 .u-max-full-width {
   max-width: 100%;
   box-sizing: border-box;
 }
+
 .u-pull-right {
   float: right;
 }
+
 .u-pull-left {
   float: left;
 }
