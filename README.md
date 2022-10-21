@@ -1,1 +1,2 @@
-[![summary](https://cr-skills-chart-widget.azurewebsites.net/api/api?username=boredland&skills=javascript,typescript,shell,java,python)](https://profile.codersrank.io/user/boredland)
+![](https://hit.yhype.me/github/profile?user_id=4662748)
+![GitHub stats](https://github-readme-stats.vercel.app/api?username=boredland&theme=synthwave&show_icons=true)
