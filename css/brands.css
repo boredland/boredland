@@ -618,3 +618,14 @@ button:hover,
 .button.button-letterboxd:focus {
   filter: brightness(90%);
 }
+
+/* Matrix */
+.button.button-matrix {
+  color: #ffffff;
+  border: 1px solid #ffffff;
+  background-color: #000000;
+}
+.button.button-matrix:hover,
+.button.button-matrix:focus {
+  filter: brightness(90%);
+}
