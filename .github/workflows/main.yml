@@ -42,7 +42,7 @@ jobs:
         EXCLUDE_FORKED_REPOS: false
 
     - name: Commit cache on failure
-      if: failure()
+      if: failure() || cancelled()
       run: |
         git config --global user.name "github-stats"
         git config --global user.email "github-stats[bot]@users.noreply.github.com"

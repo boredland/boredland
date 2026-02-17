@@ -3,6 +3,8 @@
 import asyncio
 import os
 import re
+import signal
+import sys
 
 import aiohttp
 
@@ -129,6 +131,13 @@ async def main() -> None:
             exclude_langs=excluded_langs,
             ignore_forked_repos=ignore_forked_repos,
         )
+
+        def _sigterm_handler(signum, frame):
+            s.save_cache(final=True)
+            sys.exit(0)
+
+        signal.signal(signal.SIGTERM, _sigterm_handler)
+
         try:
             await asyncio.gather(generate_languages(s), generate_overview(s))
         finally:
