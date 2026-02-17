@@ -130,6 +130,7 @@ async def main() -> None:
             ignore_forked_repos=ignore_forked_repos,
         )
         await asyncio.gather(generate_languages(s), generate_overview(s))
+        s.save_cache()
 
 
 if __name__ == "__main__":

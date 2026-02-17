@@ -1,11 +1,26 @@
 #!/usr/bin/python3
 
 import asyncio
+import json
 import os
+from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple, Any, cast
 
 import aiohttp
 import requests
+
+
+CACHE_FILE = Path("generated/cache.json")
+
+
+def _load_cache() -> Dict:
+    if CACHE_FILE.exists():
+        try:
+            with open(CACHE_FILE) as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
 
 
 ###############################################################################
@@ -143,6 +158,7 @@ class Queries(object):
           totalCount
         }}
         forkCount
+        pushedAt
         languages(first: 10, orderBy: {{field: SIZE, direction: DESC}}) {{
           edges {{
             size
@@ -174,6 +190,7 @@ class Queries(object):
           totalCount
         }}
         forkCount
+        pushedAt
         languages(first: 10, orderBy: {{field: SIZE, direction: DESC}}) {{
           edges {{
             size
@@ -267,6 +284,9 @@ class Stats(object):
         self._repos: Optional[Set[str]] = None
         self._lines_changed: Optional[Tuple[int, int]] = None
         self._views: Optional[int] = None
+        self._cache: Dict = _load_cache()
+        self._repo_pushed_at: Dict[str, str] = {}
+        self._new_cache_repos: Dict[str, Any] = {}
 
     async def to_str(self) -> str:
         """
@@ -340,6 +360,8 @@ Languages:
                 self._repos.add(name)
                 self._stargazers += repo.get("stargazers").get("totalCount", 0)
                 self._forks += repo.get("forkCount", 0)
+                if pushed_at := repo.get("pushedAt"):
+                    self._repo_pushed_at[name] = pushed_at
 
                 for lang in repo.get("languages", {}).get("edges", []):
                     name = lang.get("node", {}).get("name", "Other")
@@ -476,7 +498,18 @@ Languages:
             return self._lines_changed
         additions = 0
         deletions = 0
+        cached_repos = self._cache.get("repos", {})
         for repo in await self.repos:
+            pushed_at = self._repo_pushed_at.get(repo)
+            cached = cached_repos.get(repo, {})
+            if pushed_at and cached.get("pushedAt") == pushed_at:
+                additions += cached.get("additions", 0)
+                deletions += cached.get("deletions", 0)
+                self._new_cache_repos[repo] = cached
+                continue
+
+            repo_additions = 0
+            repo_deletions = 0
             r = await self.queries.query_rest(f"/repos/{repo}/stats/contributors")
 
             for author_obj in r:
@@ -490,11 +523,27 @@ Languages:
                     continue
 
                 for week in author_obj.get("weeks", []):
-                    additions += week.get("a", 0)
-                    deletions += week.get("d", 0)
+                    repo_additions += week.get("a", 0)
+                    repo_deletions += week.get("d", 0)
+
+            additions += repo_additions
+            deletions += repo_deletions
+            self._new_cache_repos[repo] = {
+                "pushedAt": pushed_at,
+                "additions": repo_additions,
+                "deletions": repo_deletions,
+            }
 
         self._lines_changed = (additions, deletions)
         return self._lines_changed
+
+    def save_cache(self) -> None:
+        """
+        Persist per-repo contributor stats so future runs can skip unchanged repos.
+        """
+        CACHE_FILE.parent.mkdir(exist_ok=True)
+        with open(CACHE_FILE, "w") as f:
+            json.dump({"repos": self._new_cache_repos}, f, indent=2)
 
     @property
     async def views(self) -> int:
