@@ -1,0 +1,22 @@
+name: 'Update profile stats'
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: kw4ntiq/github-profile-stats@v2
+        with:
+          gh-token: ${{ secrets.GH_TOKEN }}
+          timezone: "UTC"
+          output-file: "README.md"
+          max-languages-to-show: 6
+          min-language-percentage: 15
