@@ -543,20 +543,17 @@ Languages:
         """
         if self._lines_changed is not None:
             return self._lines_changed
-        additions = 0
-        deletions = 0
         repos = await self.repos
         cached_repos = self._cache.get("repos", {})
-        log.info("Fetching contributor stats for %d repos", len(repos))
-        for repo in repos:
+        log.info("Fetching contributor stats for %d repos (parallel)", len(repos))
+
+        async def fetch_repo_lines(repo: str) -> Tuple[int, int]:
             pushed_at = self._repo_pushed_at.get(repo)
             cached = cached_repos.get(repo, {})
             if pushed_at and cached.get("pushedAt") == pushed_at:
                 log.info("  [cache hit]  %s", repo)
-                additions += cached.get("additions", 0)
-                deletions += cached.get("deletions", 0)
                 self._new_cache_repos[repo] = cached
-                continue
+                return cached.get("additions", 0), cached.get("deletions", 0)
 
             log.info("  [fetching]   %s", repo)
             repo_additions = 0
@@ -564,7 +561,6 @@ Languages:
             r = await self.queries.query_rest(f"/repos/{repo}/stats/contributors")
 
             for author_obj in r:
-                # Handle malformed response from the API by skipping this repo
                 if not isinstance(author_obj, dict) or not isinstance(
                     author_obj.get("author", {}), dict
                 ):
@@ -572,20 +568,21 @@ Languages:
                 author = author_obj.get("author", {}).get("login", "")
                 if author != self.username:
                     continue
-
                 for week in author_obj.get("weeks", []):
                     repo_additions += week.get("a", 0)
                     repo_deletions += week.get("d", 0)
 
             log.info("  [done]       %s (+%d/-%d lines)", repo, repo_additions, repo_deletions)
-            additions += repo_additions
-            deletions += repo_deletions
             self._new_cache_repos[repo] = {
                 "pushedAt": pushed_at,
                 "additions": repo_additions,
                 "deletions": repo_deletions,
             }
+            return repo_additions, repo_deletions
 
+        results = await asyncio.gather(*[fetch_repo_lines(r) for r in repos])
+        additions = sum(a for a, _ in results)
+        deletions = sum(d for _, d in results)
         self._lines_changed = (additions, deletions)
         return self._lines_changed
 
@@ -607,14 +604,14 @@ Languages:
         if self._views is not None:
             return self._views
 
-        total = 0
-        for repo in await self.repos:
+        async def fetch_repo_views(repo: str) -> int:
             r = await self.queries.query_rest(f"/repos/{repo}/traffic/views")
-            for view in r.get("views", []):
-                total += view.get("count", 0)
+            return sum(view.get("count", 0) for view in r.get("views", []))
 
-        self._views = total
-        return total
+        repos = await self.repos
+        results = await asyncio.gather(*[fetch_repo_views(r) for r in repos])
+        self._views = sum(results)
+        return self._views
 
 
 ###############################################################################
