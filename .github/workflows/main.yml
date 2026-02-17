@@ -17,10 +17,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Python 3.8
+    - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
-        python-version: '3.8'
+        python-version: '3.12'
         architecture: 'x64'
         cache: 'pip'
 
@@ -34,10 +34,7 @@ jobs:
         python3 --version
         python3 generate_images.py
       env:
-        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        EXCLUDED: ${{ secrets.EXCLUDED }}
-        EXCLUDED_LANGS: ${{ secrets.EXCLUDED_LANGS }}
         EXCLUDE_FORKED_REPOS: false
 
     - name: Commit to the repo
