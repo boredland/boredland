@@ -37,6 +37,15 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         EXCLUDE_FORKED_REPOS: false
 
+    - name: Commit cache on failure
+      if: failure()
+      run: |
+        git config --global user.name "github-stats"
+        git config --global user.email "github-stats[bot]@users.noreply.github.com"
+        git add generated/cache.json
+        git commit -m 'Update stats cache' || true
+        git push
+
     - name: Commit to the repo
       run: |
         git config --global user.name "github-stats"
