@@ -578,6 +578,7 @@ Languages:
                 "additions": repo_additions,
                 "deletions": repo_deletions,
             }
+            self.save_cache()
             return repo_additions, repo_deletions
 
         results = await asyncio.gather(*[fetch_repo_lines(r) for r in repos])
@@ -586,14 +587,15 @@ Languages:
         self._lines_changed = (additions, deletions)
         return self._lines_changed
 
-    def save_cache(self) -> None:
+    def save_cache(self, *, final: bool = False) -> None:
         """
         Persist per-repo contributor stats so future runs can skip unchanged repos.
         """
         CACHE_FILE.parent.mkdir(exist_ok=True)
         with open(CACHE_FILE, "w") as f:
             json.dump({"repos": self._new_cache_repos}, f, indent=2)
-        log.info("Cache saved: %d repos", len(self._new_cache_repos))
+        if final:
+            log.info("Cache saved: %d repos", len(self._new_cache_repos))
 
     @property
     async def views(self) -> int:

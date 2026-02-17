@@ -132,7 +132,7 @@ async def main() -> None:
         try:
             await asyncio.gather(generate_languages(s), generate_overview(s))
         finally:
-            s.save_cache()
+            s.save_cache(final=True)
 
 
 if __name__ == "__main__":
