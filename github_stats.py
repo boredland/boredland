@@ -56,28 +56,40 @@ class Queries(object):
         headers = {
             "Authorization": f"Bearer {self.access_token}",
         }
-        try:
-            async with self.semaphore:
-                r_async = await self.session.post(
-                    "https://api.github.com/graphql",
-                    headers=headers,
-                    json={"query": generated_query},
-                )
-            result = await r_async.json()
-            if result is not None:
-                return result
-        except:
-            print("aiohttp failed for GraphQL query")
-            # Fall back on non-async requests
-            async with self.semaphore:
-                r_requests = requests.post(
-                    "https://api.github.com/graphql",
-                    headers=headers,
-                    json={"query": generated_query},
-                )
-                result = r_requests.json()
+        for _ in range(10):
+            try:
+                async with self.semaphore:
+                    r_async = await self.session.post(
+                        "https://api.github.com/graphql",
+                        headers=headers,
+                        json={"query": generated_query},
+                    )
+                if r_async.status in (429, 403):
+                    retry_after = int(r_async.headers.get("Retry-After", 60))
+                    print(f"GraphQL rate limited. Waiting {retry_after}s...")
+                    await asyncio.sleep(retry_after)
+                    continue
+                result = await r_async.json()
                 if result is not None:
                     return result
+            except:
+                print("aiohttp failed for GraphQL query")
+                # Fall back on non-async requests
+                async with self.semaphore:
+                    r_requests = requests.post(
+                        "https://api.github.com/graphql",
+                        headers=headers,
+                        json={"query": generated_query},
+                    )
+                    if r_requests.status_code in (429, 403):
+                        retry_after = int(r_requests.headers.get("Retry-After", 60))
+                        print(f"GraphQL rate limited. Waiting {retry_after}s...")
+                        await asyncio.sleep(retry_after)
+                        continue
+                    result = r_requests.json()
+                    if result is not None:
+                        return result
+            break
 
         return dict()
 
@@ -107,6 +119,11 @@ class Queries(object):
                     print(f"A path returned 202. Retrying...")
                     await asyncio.sleep(2)
                     continue
+                if r_async.status in (429, 403):
+                    retry_after = int(r_async.headers.get("Retry-After", 60))
+                    print(f"REST rate limited. Waiting {retry_after}s...")
+                    await asyncio.sleep(retry_after)
+                    continue
                 result = await r_async.json()
                 if result is not None:
                     return result
@@ -122,6 +139,11 @@ class Queries(object):
                     if r_requests.status_code == 202:
                         print(f"A path returned 202. Retrying...")
                         await asyncio.sleep(2)
+                        continue
+                    elif r_requests.status_code in (429, 403):
+                        retry_after = int(r_requests.headers.get("Retry-After", 60))
+                        print(f"REST rate limited. Waiting {retry_after}s...")
+                        await asyncio.sleep(retry_after)
                         continue
                     elif r_requests.status_code == 200:
                         return r_requests.json()
