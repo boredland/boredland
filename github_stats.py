@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple, Any, cast
@@ -10,6 +11,13 @@ import aiohttp
 import requests
 
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    datefmt="%H:%M:%S",
+)
+log = logging.getLogger("github_stats")
+
 CACHE_FILE = Path("generated/cache.json")
 
 
@@ -17,9 +25,13 @@ def _load_cache() -> Dict:
     if CACHE_FILE.exists():
         try:
             with open(CACHE_FILE) as f:
-                return json.load(f)
-        except Exception:
+                data = json.load(f)
+            log.info("Cache loaded: %d repos cached", len(data.get("repos", {})))
+            return data
+        except Exception as e:
+            log.warning("Failed to load cache: %s", e)
             return {}
+    log.info("No cache found, starting fresh")
     return {}
 
 
@@ -56,7 +68,8 @@ class Queries(object):
         headers = {
             "Authorization": f"Bearer {self.access_token}",
         }
-        for _ in range(10):
+        log.debug("GraphQL query: %.120s", generated_query.strip())
+        for attempt in range(10):
             try:
                 async with self.semaphore:
                     r_async = await self.session.post(
@@ -66,14 +79,16 @@ class Queries(object):
                     )
                 if r_async.status in (429, 403):
                     retry_after = int(r_async.headers.get("Retry-After", 60))
-                    print(f"GraphQL rate limited. Waiting {retry_after}s...")
+                    log.warning("GraphQL rate limited (HTTP %d). Waiting %ds... (attempt %d/10)", r_async.status, retry_after, attempt + 1)
                     await asyncio.sleep(retry_after)
                     continue
                 result = await r_async.json()
                 if result is not None:
+                    if "errors" in result:
+                        log.warning("GraphQL response contains errors: %s", result["errors"])
                     return result
-            except:
-                print("aiohttp failed for GraphQL query")
+            except Exception as e:
+                log.error("aiohttp failed for GraphQL query: %s — falling back to requests", e)
                 # Fall back on non-async requests
                 async with self.semaphore:
                     r_requests = requests.post(
@@ -83,7 +98,7 @@ class Queries(object):
                     )
                     if r_requests.status_code in (429, 403):
                         retry_after = int(r_requests.headers.get("Retry-After", 60))
-                        print(f"GraphQL rate limited. Waiting {retry_after}s...")
+                        log.warning("GraphQL rate limited (HTTP %d). Waiting %ds... (attempt %d/10)", r_requests.status_code, retry_after, attempt + 1)
                         await asyncio.sleep(retry_after)
                         continue
                     result = r_requests.json()
@@ -91,6 +106,7 @@ class Queries(object):
                         return result
             break
 
+        log.error("GraphQL query failed after all attempts")
         return dict()
 
     async def query_rest(self, path: str, params: Optional[Dict] = None) -> Dict:
@@ -100,14 +116,15 @@ class Queries(object):
         :param params: Query parameters to be passed to the API
         :return: deserialized REST JSON output
         """
-        for _ in range(60):
+        if params is None:
+            params = dict()
+        if path.startswith("/"):
+            path = path[1:]
+        log.debug("REST GET %s", path)
+        for attempt in range(60):
             headers = {
                 "Authorization": f"token {self.access_token}",
             }
-            if params is None:
-                params = dict()
-            if path.startswith("/"):
-                path = path[1:]
             try:
                 async with self.semaphore:
                     r_async = await self.session.get(
@@ -116,19 +133,19 @@ class Queries(object):
                         params=tuple(params.items()),
                     )
                 if r_async.status == 202:
-                    print(f"A path returned 202. Retrying...")
+                    log.info("REST %s returned 202 (stats computing). Retrying... (attempt %d/60)", path, attempt + 1)
                     await asyncio.sleep(2)
                     continue
                 if r_async.status in (429, 403):
                     retry_after = int(r_async.headers.get("Retry-After", 60))
-                    print(f"REST rate limited. Waiting {retry_after}s...")
+                    log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_async.status, retry_after, attempt + 1)
                     await asyncio.sleep(retry_after)
                     continue
                 result = await r_async.json()
                 if result is not None:
                     return result
-            except:
-                print("aiohttp failed for rest query")
+            except Exception as e:
+                log.error("aiohttp failed for REST GET %s: %s — falling back to requests", path, e)
                 # Fall back on non-async requests
                 async with self.semaphore:
                     r_requests = requests.get(
@@ -137,17 +154,17 @@ class Queries(object):
                         params=tuple(params.items()),
                     )
                     if r_requests.status_code == 202:
-                        print(f"A path returned 202. Retrying...")
+                        log.info("REST %s returned 202 (stats computing). Retrying... (attempt %d/60)", path, attempt + 1)
                         await asyncio.sleep(2)
                         continue
                     elif r_requests.status_code in (429, 403):
                         retry_after = int(r_requests.headers.get("Retry-After", 60))
-                        print(f"REST rate limited. Waiting {retry_after}s...")
+                        log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_requests.status_code, retry_after, attempt + 1)
                         await asyncio.sleep(retry_after)
                         continue
                     elif r_requests.status_code == 200:
                         return r_requests.json()
-        print("There were too many 202s. Data for this repository will be incomplete.")
+        log.error("REST %s: too many retries, data will be incomplete", path)
         return dict()
 
     @staticmethod
@@ -335,6 +352,7 @@ Languages:
         """
         Get lots of summary statistics using one big query. Sets many attributes
         """
+        log.info("Fetching repository overview for %s", self.username)
         self._stargazers = 0
         self._forks = 0
         self._languages = dict()
@@ -344,7 +362,10 @@ Languages:
 
         next_owned = None
         next_contrib = None
+        page = 0
         while True:
+            page += 1
+            log.info("Fetching repos page %d", page)
             raw_results = await self.queries.query(
                 Queries.repos_overview(
                     owned_cursor=next_owned, contrib_cursor=next_contrib
@@ -384,6 +405,7 @@ Languages:
                 self._forks += repo.get("forkCount", 0)
                 if pushed_at := repo.get("pushedAt"):
                     self._repo_pushed_at[name] = pushed_at
+                log.info("  Found repo: %s (pushed: %s)", name, repo.get("pushedAt", "unknown"))
 
                 for lang in repo.get("languages", {}).get("edges", []):
                     name = lang.get("node", {}).get("name", "Other")
@@ -412,6 +434,7 @@ Languages:
             else:
                 break
 
+        log.info("Discovered %d repos total", len(self._repos))
         langs_total = sum([v.get("size", 0) for v in self._languages.values()])
         for k, v in self._languages.items():
             v["prop"] = 100 * (v.get("size", 0) / langs_total)
@@ -491,6 +514,7 @@ Languages:
             return self._total_contributions
 
         self._total_contributions = 0
+        log.info("Fetching contribution years")
         years = (
             (await self.queries.query(Queries.contrib_years()))
             .get("data", {})
@@ -498,6 +522,7 @@ Languages:
             .get("contributionsCollection", {})
             .get("contributionYears", [])
         )
+        log.info("Fetching contributions for years: %s", years)
         by_year = (
             (await self.queries.query(Queries.all_contribs(years)))
             .get("data", {})
@@ -520,16 +545,20 @@ Languages:
             return self._lines_changed
         additions = 0
         deletions = 0
+        repos = await self.repos
         cached_repos = self._cache.get("repos", {})
-        for repo in await self.repos:
+        log.info("Fetching contributor stats for %d repos", len(repos))
+        for repo in repos:
             pushed_at = self._repo_pushed_at.get(repo)
             cached = cached_repos.get(repo, {})
             if pushed_at and cached.get("pushedAt") == pushed_at:
+                log.info("  [cache hit]  %s", repo)
                 additions += cached.get("additions", 0)
                 deletions += cached.get("deletions", 0)
                 self._new_cache_repos[repo] = cached
                 continue
 
+            log.info("  [fetching]   %s", repo)
             repo_additions = 0
             repo_deletions = 0
             r = await self.queries.query_rest(f"/repos/{repo}/stats/contributors")
@@ -548,6 +577,7 @@ Languages:
                     repo_additions += week.get("a", 0)
                     repo_deletions += week.get("d", 0)
 
+            log.info("  [done]       %s (+%d/-%d lines)", repo, repo_additions, repo_deletions)
             additions += repo_additions
             deletions += repo_deletions
             self._new_cache_repos[repo] = {
@@ -566,6 +596,7 @@ Languages:
         CACHE_FILE.parent.mkdir(exist_ok=True)
         with open(CACHE_FILE, "w") as f:
             json.dump({"repos": self._new_cache_repos}, f, indent=2)
+        log.info("Cache saved: %d repos", len(self._new_cache_repos))
 
     @property
     async def views(self) -> int:
