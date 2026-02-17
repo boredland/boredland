@@ -28,12 +28,93 @@
 
     <link rel="stylesheet" href="css/brands.css" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+
     <style>
+      body {
+        background-color: #0a0a0f;
+        color: #f0c040;
+        font-family: "Press Start 2P", monospace;
+        font-size: 12px;
+        line-height: 22px;
+      }
+
+      /* CRT scanline overlay */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.15) 2px,
+          rgba(0, 0, 0, 0.15) 4px
+        );
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      h1 {
+        font-family: "Press Start 2P", monospace;
+        font-size: 20px;
+        line-height: 36px;
+        letter-spacing: 2px;
+      }
+
+      @media (min-width: 550px) {
+        h1 {
+          font-size: 28px;
+          line-height: 48px;
+        }
+      }
+
+      p {
+        font-size: 10px;
+        line-height: 20px;
+        color: #d0a030;
+      }
+
       .gradient-name {
         background: linear-gradient(90deg, #f0c040, #d060b0);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+        text-shadow: none;
+        filter: drop-shadow(0 0 8px rgba(240, 192, 64, 0.5));
+      }
+
+      /* Pixel glow on avatar */
+      img[alt="Picture of Jonas Strassel"] {
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px #f0c040, 0 0 20px rgba(240, 192, 64, 0.4);
+        image-rendering: pixelated;
+      }
+
+      /* Retro button overrides */
+      .button {
+        font-family: "Press Start 2P", monospace;
+        font-size: 9px;
+        border-radius: 0;
+        border: 2px solid #f0c040;
+        color: #f0c040;
+        background: transparent;
+        letter-spacing: 1px;
+        transition: background 0.1s, color 0.1s, box-shadow 0.1s;
+      }
+      .button:hover {
+        background: #f0c040;
+        color: #0a0a0f;
+        box-shadow: 0 0 12px rgba(240, 192, 64, 0.7);
+      }
+
+      a {
+        color: #f0c040;
+      }
+      a:hover {
+        color: #d060b0;
       }
     </style>
 
