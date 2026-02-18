@@ -125,6 +125,13 @@
         width: 280px;
         text-align: left;
       }
+
+      .social-links {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
       .button:hover {
         background: #f0c040;
         color: #0a0a0f;
@@ -205,7 +212,7 @@
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
     <div class="container">
       <div class="row">
-        <div class="column" style="margin-top: 10%">
+        <div class="column" style="margin-top: 10%; text-align: center">
           <!-- Your Image Here -->
           <img
             src="https://wsrv.nl/?url=avatars.githubusercontent.com/u/4662748?s=242&output=webp&maxage=1y"
@@ -219,14 +226,13 @@
           <h1 class="gradient-name">Jonas Strassel</h1>
 
           <!-- Short Bio + GitHub -->
+          <div class="social-links">
           <a href="https://github.com/boredland" target="_blank" rel="noopener" style="text-decoration:none;"><p style="font-family: monospace; font-size: 13px; background: #0d0d16; border: 2px solid #f0c040; padding: 0.5em 0.8em; display: inline-block; color: #f0c040; text-shadow: 0 0 6px rgba(240,192,64,0.4); transition: box-shadow 0.1s; box-sizing: border-box; width: 280px; margin-bottom: 0;">$ git blame <span style="color:#d060b0;">github.com/boredland</span></p></a>
-          <br />
 
           <!-- X -->
           <a class="button button-x" href="https://twitter.com/boredland069" target="_blank" rel="noopener" role="button">
             <img class="icon" src="assets/icons/x.svg" alt="">Follow on X
           </a>
-          <br />
 
           <!-- LinkedIn -->
           <a
@@ -240,7 +246,6 @@
               alt="LinkedIn Logo"
             />LinkedIn</a
           >
-          <br />
 
           <!-- Discord -->
           <a
@@ -254,11 +259,11 @@
               alt="Discord Logo"
             />Discord</a
           >
-          <br />
 
           <!-- Matrix -->
           <a class="button button-matrix" href="https://matrix.to/#/@boredland:matrix.org" target="_blank" rel="noopener">
             <img class="icon" src="assets/icons/matrix.svg" alt="Matrix Logo">Matrix</a>
+          </div>
         </div>
       </div>
     </div>
