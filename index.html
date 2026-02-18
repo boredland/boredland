@@ -562,11 +562,12 @@
           if (deathTick > DEATH_FRAMES) {
             dying = false;
             deathTick = 0;
-            // Respawn at start
+            // Respawn at start, reset dots
             const rc = corners();
             pac.x = rc[0].x; pac.y = rc[0].y;
             corner = 0;
             pac.dir = 0;
+            dots.forEach(d => d.alive = true);
           }
         } else {
           // Move pacman along perimeter
