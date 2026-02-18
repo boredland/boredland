@@ -729,8 +729,8 @@
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.restore();
 
-          // Atari-style firework bursts every 30 ticks
-          if (winTick % 30 === 0) {
+          // Atari-style firework bursts every 50 ticks
+          if (winTick % 50 === 0) {
             const bx = MARGIN + SIZE + Math.random() * (canvas.width - 2 * MARGIN - 2 * SIZE);
             const by = MARGIN + SIZE * 2 + Math.random() * (canvas.height - 2 * MARGIN - 4 * SIZE);
             // Strict Atari NTSC-ish palette: bright, saturated, limited
@@ -742,9 +742,9 @@
               ['#40ff40', '#ffffff'],          // green + white
             ];
             const pal = ATARI_PALETTES[Math.floor(Math.random() * ATARI_PALETTES.length)];
-            // 6-spoke starburst
+            // 4-spoke starburst
             const spokeSpeed = 2 + Math.random() * 1.5;
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 4; i++) {
               const angle = (i / 6) * Math.PI * 2;
               const col = i % 2 === 0 ? pal[0] : pal[1];
               particles.push({
