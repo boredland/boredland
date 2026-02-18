@@ -317,7 +317,7 @@
       // Win state
       let winning = false;
       let winTick = 0;
-      const WIN_FRAMES = 80;
+      const WIN_FRAMES = 300; // 5s at 60fps
 
       // Dots along the perimeter
       let dots = [];
@@ -681,9 +681,31 @@
           }
         }
 
-        // Win animation: fireworks + growing pacman + screen flash
+        // Win animation: fireworks + fast pacman + screen flash
         if (winning) {
           const progress = winTick / WIN_FRAMES;
+
+          // Move pacman fast around the perimeter during win
+          const winSpeed = SPEED * 5;
+          c = corners();
+          const winTargets = [
+            { x: c[1].x, y: c[0].y, dir: 0 },
+            { x: c[1].x, y: c[2].y, dir: 1 },
+            { x: c[3].x, y: c[2].y, dir: 2 },
+            { x: c[0].x, y: c[0].y, dir: 3 },
+          ];
+          const wt = winTargets[corner];
+          const wdx = wt.x - pac.x, wdy = wt.y - pac.y;
+          const wdist = Math.sqrt(wdx*wdx + wdy*wdy);
+          if (wdist < winSpeed + 1) {
+            pac.x = wt.x; pac.y = wt.y;
+            corner = (corner + 1) % 4;
+            pac.dir = winTargets[corner].dir;
+          } else {
+            pac.x += (wdx / wdist) * winSpeed;
+            pac.y += (wdy / wdist) * winSpeed;
+          }
+          if (tick % 3 === 0) pac.frame = (pac.frame + 1) % 2;
 
           // Pulsing full-screen color flash
           const flashPhase = Math.sin(winTick * 0.4);
@@ -693,8 +715,8 @@
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.restore();
 
-          // Firework bursts: spawn a burst every 10 ticks in first 3/4
-          if (winTick % 10 === 0 && progress < 0.75) {
+          // Firework bursts every 10 ticks
+          if (winTick % 10 === 0) {
             const bx = MARGIN + SIZE + Math.random() * (canvas.width - 2 * MARGIN - 2 * SIZE);
             const by = MARGIN + SIZE + Math.random() * (canvas.height - 2 * MARGIN - 2 * SIZE);
             const fwColors = [COLOR, DOT_COLOR, '#ffffff', '#ff4466', '#00ffff'];
@@ -706,20 +728,8 @@
             }
           }
 
-          // Spin & grow pacman
-          const spinAngle = progress * Math.PI * 6; // 3 full spins
-          const growR = (SIZE / 2) * (1 + progress * 1.5); // grows to 2.5× size
-          const cx = pac.x + SIZE / 2, cy = pac.y + SIZE / 2;
-          const openAngle = 0.35;
-          ctx.save();
-          ctx.globalAlpha = 1 - progress * 0.3;
-          ctx.fillStyle = COLOR;
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.arc(cx, cy, growR, spinAngle + openAngle, spinAngle + Math.PI * 2 - openAngle);
-          ctx.closePath();
-          ctx.fill();
-          ctx.restore();
+          // Draw pacman normally (racing fast around the perimeter)
+          drawPixel(FRAMES[pac.frame], pac.x, pac.y, DIR_ANGLE[pac.dir]);
 
           winTick++;
           if (winTick > WIN_FRAMES) {
