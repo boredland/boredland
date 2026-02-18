@@ -348,6 +348,70 @@
 
       const DIR_ANGLE = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
 
+      // ── Ghosts ──────────────────────────────────────────────────────────────
+      // 8×8 pixel ghost, two wiggle frames (skirt flaps)
+      const GHOST_FRAMES = [
+        [
+          [0,0,1,1,1,1,0,0],
+          [0,1,1,1,1,1,1,0],
+          [1,1,0,1,1,0,1,1],
+          [1,1,1,1,1,1,1,1],
+          [1,1,1,1,1,1,1,1],
+          [1,1,1,1,1,1,1,1],
+          [1,0,1,1,1,1,0,1],
+          [0,0,0,1,1,0,0,0],
+        ],
+        [
+          [0,0,1,1,1,1,0,0],
+          [0,1,1,1,1,1,1,0],
+          [1,1,0,1,1,0,1,1],
+          [1,1,1,1,1,1,1,1],
+          [1,1,1,1,1,1,1,1],
+          [1,1,1,1,1,1,1,1],
+          [0,1,1,0,0,1,1,0],
+          [0,0,1,0,0,1,0,0],
+        ],
+      ];
+      // Classic ghost colors: Blinky red, Pinky pink, Inky cyan, Clyde orange
+      const GHOST_COLORS = ['#ff0000', '#ffb8ff', '#00ffff', '#ffb852'];
+
+      const ghosts = GHOST_COLORS.map((color, i) => ({
+        color,
+        x: Math.random() * (window.innerWidth - SIZE),
+        y: Math.random() * (window.innerHeight - SIZE),
+        vx: (Math.random() * 1.2 + 0.6) * (Math.random() < 0.5 ? 1 : -1),
+        vy: (Math.random() * 0.8 + 0.4) * (Math.random() < 0.5 ? 1 : -1),
+        frame: i % 2,
+      }));
+
+      function drawGhost(ghost, frame) {
+        const grid = GHOST_FRAMES[frame];
+        const ox = ghost.x, oy = ghost.y;
+        for (let r = 0; r < grid.length; r++) {
+          for (let col = 0; col < grid[r].length; col++) {
+            if (!grid[r][col]) continue;
+            // Eyes (row 2, cols 1-2 and 5-6) drawn in white/blue
+            const isEyeWhite = r === 2 && (col === 1 || col === 5);
+            const isEyePupil = r === 3 && (col === 1 || col === 5);
+            ctx.fillStyle = isEyeWhite ? '#ffffff' : isEyePupil ? '#2121de' : ghost.color;
+            ctx.fillRect(ox + col * S, oy + r * S, S, S);
+          }
+        }
+      }
+
+      function updateGhosts() {
+        const W = canvas.width, H = canvas.height;
+        for (const g of ghosts) {
+          g.x += g.vx;
+          g.y += g.vy;
+          if (g.x < 0) { g.x = 0; g.vx = Math.abs(g.vx); }
+          if (g.x > W - SIZE) { g.x = W - SIZE; g.vx = -Math.abs(g.vx); }
+          if (g.y < 0) { g.y = 0; g.vy = Math.abs(g.vy); }
+          if (g.y > H - SIZE) { g.y = H - SIZE; g.vy = -Math.abs(g.vy); }
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────────
+
       function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -357,6 +421,11 @@
           ctx.fillStyle = DOT_COLOR;
           ctx.fillRect(d.x - 3, d.y - 3, 6, 6);
         }
+
+        // Ghosts
+        updateGhosts();
+        const ghostFrame = Math.floor(tick / 8) % 2;
+        for (const g of ghosts) drawGhost(g, ghostFrame);
 
         // Move pacman along perimeter
         c = corners();
