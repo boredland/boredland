@@ -309,6 +309,11 @@
       let pac = { x: c[0].x, y: c[0].y, dir: 0, frame: 0 };
       let tick = 0;
 
+      // Death state
+      let dying = false;      // currently playing death anim
+      let deathTick = 0;      // 0-60 frames
+      const DEATH_FRAMES = 50;
+
       // Dots along the perimeter
       let dots = [];
       function initDots() {
@@ -452,24 +457,26 @@
         color,
         x: Math.random() * (window.innerWidth - SIZE),
         y: Math.random() * (window.innerHeight - SIZE),
-        vx: (Math.random() * 1.2 + 0.6) * (Math.random() < 0.5 ? 1 : -1),
-        vy: (Math.random() * 0.8 + 0.4) * (Math.random() < 0.5 ? 1 : -1),
+        vx: (Math.random() * 0.5 + 0.2) * (Math.random() < 0.5 ? 1 : -1),
+        vy: (Math.random() * 0.35 + 0.15) * (Math.random() < 0.5 ? 1 : -1),
         frame: i % 2,
       }));
 
       function drawGhost(ghost, frame) {
         const grid = GHOST_FRAMES[frame];
         const ox = ghost.x, oy = ghost.y;
+        ctx.save();
+        ctx.globalAlpha = 0.38;
         for (let r = 0; r < grid.length; r++) {
           for (let col = 0; col < grid[r].length; col++) {
             if (!grid[r][col]) continue;
-            // Eyes (row 2, cols 1-2 and 5-6) drawn in white/blue
             const isEyeWhite = r === 2 && (col === 1 || col === 5);
             const isEyePupil = r === 3 && (col === 1 || col === 5);
             ctx.fillStyle = isEyeWhite ? '#ffffff' : isEyePupil ? '#2121de' : ghost.color;
             ctx.fillRect(ox + col * S, oy + r * S, S, S);
           }
         }
+        ctx.restore();
       }
 
       function updateGhosts() {
@@ -485,8 +492,43 @@
       }
       // ────────────────────────────────────────────────────────────────────────
 
+      // ── Eat particles ───────────────────────────────────────────────────────
+      let particles = [];
+      function spawnParticles(x, y, color) {
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2;
+          const speed = Math.random() * 2 + 1;
+          particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1.0,
+            color,
+          });
+        }
+      }
+      function updateParticles() {
+        particles = particles.filter(p => p.life > 0);
+        for (const p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.life -= 0.06;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x - S/2, p.y - S/2, S, S);
+          ctx.restore();
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────────
+
       function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Ghosts (background, drawn first)
+        updateGhosts();
+        const ghostFrame = Math.floor(tick / 8) % 2;
+        for (const g of ghosts) drawGhost(g, ghostFrame);
 
         // Draw dots
         for (const d of dots) {
@@ -495,60 +537,98 @@
           ctx.fillRect(d.x - 3, d.y - 3, 6, 6);
         }
 
-        // Ghosts
-        updateGhosts();
-        const ghostFrame = Math.floor(tick / 8) % 2;
-        for (const g of ghosts) drawGhost(g, ghostFrame);
-
         // Fruits
         fruits = fruits.filter(f => f.alive);
         for (const f of fruits) drawFruit(f);
-        // Move pacman along perimeter
-        c = corners();
-        const targets = [
-          { x: c[1].x, y: c[0].y, dir: 0 }, // going right → corner top-right
-          { x: c[1].x, y: c[2].y, dir: 1 }, // going down → corner bottom-right
-          { x: c[3].x, y: c[2].y, dir: 2 }, // going left → corner bottom-left
-          { x: c[0].x, y: c[0].y, dir: 3 }, // going up → corner top-left
-        ];
 
-        const target = targets[corner];
-        const dx = target.x - pac.x;
-        const dy = target.y - pac.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
+        // Particles
+        updateParticles();
 
-        if (dist < SPEED + 1) {
-          pac.x = target.x;
-          pac.y = target.y;
-          corner = (corner + 1) % 4;
-          pac.dir = targets[corner].dir;
+        if (dying) {
+          // Death animation: arc closes from open-mouth wedge to nothing
+          const progress = deathTick / DEATH_FRAMES; // 0 → 1
+          const openAngle = (1 - progress) * Math.PI; // full half-circle → 0
+          const cx = pac.x + SIZE / 2, cy = pac.y + SIZE / 2;
+          const r = (SIZE / 2) * (1 - progress * 0.5); // shrink slightly too
+          ctx.save();
+          ctx.fillStyle = COLOR;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, r, openAngle, Math.PI * 2 - openAngle);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          deathTick++;
+          if (deathTick > DEATH_FRAMES) {
+            dying = false;
+            deathTick = 0;
+            // Respawn at start
+            const rc = corners();
+            pac.x = rc[0].x; pac.y = rc[0].y;
+            corner = 0;
+            pac.dir = 0;
+          }
         } else {
-          pac.x += (dx / dist) * SPEED;
-          pac.y += (dy / dist) * SPEED;
-        }
+          // Move pacman along perimeter
+          c = corners();
+          const targets = [
+            { x: c[1].x, y: c[0].y, dir: 0 },
+            { x: c[1].x, y: c[2].y, dir: 1 },
+            { x: c[3].x, y: c[2].y, dir: 2 },
+            { x: c[0].x, y: c[0].y, dir: 3 },
+          ];
 
-        // Eat dots
-        for (const d of dots) {
-          if (!d.alive) continue;
-          if (Math.abs(pac.x + SIZE/2 - d.x) < SIZE/2 + 4 &&
-              Math.abs(pac.y + SIZE/2 - d.y) < SIZE/2 + 4) {
-            d.alive = false;
-          }
-        }
-        // Eat fruits
-        for (const f of fruits) {
-          if (!f.alive) continue;
-          if (Math.abs(pac.x + SIZE/2 - (f.x + SIZE/2)) < SIZE &&
-              Math.abs(pac.y + SIZE/2 - (f.y + SIZE/2)) < SIZE) {
-            f.alive = false;
-            setTimeout(spawnFruit, 3000);
-          }
-        }
-        // Respawn all when all eaten
-        if (dots.every(d => !d.alive)) dots.forEach(d => d.alive = true);
+          const target = targets[corner];
+          const dx = target.x - pac.x;
+          const dy = target.y - pac.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
 
-        if (tick % 8 === 0) pac.frame = (pac.frame + 1) % 2;
-        drawPixel(FRAMES[pac.frame], pac.x, pac.y, DIR_ANGLE[pac.dir]);
+          if (dist < SPEED + 1) {
+            pac.x = target.x;
+            pac.y = target.y;
+            corner = (corner + 1) % 4;
+            pac.dir = targets[corner].dir;
+          } else {
+            pac.x += (dx / dist) * SPEED;
+            pac.y += (dy / dist) * SPEED;
+          }
+
+          // Ghost collision → die
+          for (const g of ghosts) {
+            if (Math.abs(pac.x + SIZE/2 - (g.x + SIZE/2)) < SIZE * 0.8 &&
+                Math.abs(pac.y + SIZE/2 - (g.y + SIZE/2)) < SIZE * 0.8) {
+              dying = true;
+              deathTick = 0;
+              break;
+            }
+          }
+
+          // Eat dots
+          for (const d of dots) {
+            if (!d.alive) continue;
+            if (Math.abs(pac.x + SIZE/2 - d.x) < SIZE/2 + 4 &&
+                Math.abs(pac.y + SIZE/2 - d.y) < SIZE/2 + 4) {
+              d.alive = false;
+              spawnParticles(d.x, d.y, DOT_COLOR);
+            }
+          }
+          // Eat fruits
+          for (const f of fruits) {
+            if (!f.alive) continue;
+            if (Math.abs(pac.x + SIZE/2 - (f.x + SIZE/2)) < SIZE &&
+                Math.abs(pac.y + SIZE/2 - (f.y + SIZE/2)) < SIZE) {
+              spawnParticles(f.x + SIZE/2, f.y + SIZE/2, f.def.colorMap(4, 4));
+              spawnParticles(f.x + SIZE/2, f.y + SIZE/2, '#ffffff');
+              f.alive = false;
+              setTimeout(spawnFruit, 3000);
+            }
+          }
+          // Respawn all dots when all eaten
+          if (dots.every(d => !d.alive)) dots.forEach(d => d.alive = true);
+
+          if (tick % 8 === 0) pac.frame = (pac.frame + 1) % 2;
+          drawPixel(FRAMES[pac.frame], pac.x, pac.y, DIR_ANGLE[pac.dir]);
+        }
 
         tick++;
         requestAnimationFrame(animate);
