@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Jonas Strassel</title>
-    <meta name="description" content="Developer. Hired gun. Miracle worker. Utterly useless without a keyboard." />
+    <meta name="description" content="$ git blame boredland" />
     <meta name="author" content="Jonas Strassel" />
 
     <!-- Mobile Specific Metas
@@ -198,10 +198,7 @@
           <h1 class="gradient-name">Jonas Strassel</h1>
 
           <!-- Short Bio -->
-          <p>
-            I am a software developer with a passion for creating overly
-            complicated things.
-          </p>
+          <p style="font-family: monospace; font-size: 13px; background: #0d0d16; border: 1px solid #f0c040; padding: 0.5em 0.8em; display: inline-block; color: #f0c040; text-shadow: 0 0 6px rgba(240,192,64,0.4);">$ git blame boredland</p>
 
           <!-- Github -->
           <a
@@ -262,78 +259,156 @@
     <script>
     (function () {
       const canvas = document.createElement('canvas');
-      canvas.style.cssText = 'position:fixed;bottom:0;left:0;width:100%;height:80px;pointer-events:none;z-index:9998;';
+      canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9998;';
       document.body.appendChild(canvas);
-
       const ctx = canvas.getContext('2d');
-      const S = 3;
+
+      const S = 4; // pixel size
       const COLOR = '#f0c040';
-
-      // Ant frames: 10 cols × 8 rows, two walking frames
-      const FRAMES = [
-        // Frame 1 — legs spread
-        [
-          [0,1,1,0,0,0,0,0,0,0],
-          [1,0,1,1,1,0,0,0,0,0],
-          [0,0,0,1,1,1,1,0,0,0],
-          [1,0,0,0,1,1,0,0,1,0],
-          [0,0,0,0,1,1,1,1,0,0],
-          [0,1,0,0,0,1,1,0,0,1],
-          [0,0,0,0,0,1,1,1,0,0],
-          [0,0,0,0,0,0,1,0,0,0],
-        ],
-        // Frame 2 — legs tucked
-        [
-          [0,1,1,0,0,0,0,0,0,0],
-          [1,0,1,1,1,0,0,0,0,0],
-          [0,0,0,1,1,1,1,0,0,0],
-          [0,1,0,0,1,1,0,1,0,0],
-          [0,0,0,0,1,1,1,1,0,0],
-          [1,0,0,0,0,1,1,0,1,0],
-          [0,0,0,0,0,1,1,1,0,0],
-          [0,0,0,0,0,0,1,0,0,0],
-        ],
-      ];
-
-      const ANT_W = 10 * S;
-      const ANT_H = 8 * S;
-      const ANT_Y = 80 - ANT_H - 4;
+      const DOT_COLOR = '#d060b0';
+      const SPEED = 2;
+      const MARGIN = 20;
 
       function resize() {
         canvas.width = window.innerWidth;
-        canvas.height = 80;
+        canvas.height = window.innerHeight;
       }
       resize();
       window.addEventListener('resize', resize);
 
-      const ants = [
-        { x:   0, speed: 1.2, frame: 0 },
-        { x: -220, speed: 1.8, frame: 1 },
-        { x: -450, speed: 1.0, frame: 0 },
-        { x: -680, speed: 2.2, frame: 1 },
+      // Pacman pixel art 8x8, mouth open/closed facing right
+      // Will be rotated per direction
+      const FRAMES = [
+        // mouth open
+        [
+          [0,0,1,1,1,1,0,0],
+          [0,1,1,1,1,1,1,0],
+          [1,1,1,1,1,0,0,0],
+          [1,1,1,1,0,0,0,0],
+          [1,1,1,1,0,0,0,0],
+          [1,1,1,1,1,0,0,0],
+          [0,1,1,1,1,1,1,0],
+          [0,0,1,1,1,1,0,0],
+        ],
+        // mouth closed
+        [
+          [0,0,1,1,1,1,0,0],
+          [0,1,1,1,1,1,1,0],
+          [1,1,1,1,1,1,1,1],
+          [1,1,1,1,1,1,1,1],
+          [1,1,1,1,1,1,1,1],
+          [1,1,1,1,1,1,1,1],
+          [0,1,1,1,1,1,1,0],
+          [0,0,1,1,1,1,0,0],
+        ],
       ];
 
-      function drawAnt(ant) {
-        const frame = FRAMES[ant.frame];
-        for (let r = 0; r < frame.length; r++) {
-          for (let c = 0; c < frame[r].length; c++) {
-            if (frame[r][c]) {
+      const SIZE = 8 * S;
+
+      // Directions: right=0, down=1, left=2, up=3
+      // Perimeter corners
+      function corners() {
+        const W = canvas.width, H = canvas.height;
+        return [
+          { x: MARGIN, y: MARGIN },           // top-left
+          { x: W - MARGIN - SIZE, y: MARGIN },  // top-right
+          { x: W - MARGIN - SIZE, y: H - MARGIN - SIZE }, // bottom-right
+          { x: MARGIN, y: H - MARGIN - SIZE }, // bottom-left
+        ];
+      }
+
+      let corner = 0;
+      let c = corners();
+      let pac = { x: c[0].x, y: c[0].y, dir: 0, frame: 0 };
+      let tick = 0;
+
+      // Dots along the perimeter
+      let dots = [];
+      function initDots() {
+        dots = [];
+        const W = canvas.width, H = canvas.height;
+        const gap = 30;
+        // top
+        for (let x = MARGIN + SIZE + 10; x < W - MARGIN - SIZE; x += gap) dots.push({ x, y: MARGIN + SIZE/2, alive: true });
+        // right
+        for (let y = MARGIN + SIZE + 10; y < H - MARGIN - SIZE; y += gap) dots.push({ x: W - MARGIN - SIZE/2, y, alive: true });
+        // bottom
+        for (let x = W - MARGIN - SIZE - 10; x > MARGIN + SIZE; x -= gap) dots.push({ x, y: H - MARGIN - SIZE/2, alive: true });
+        // left
+        for (let y = H - MARGIN - SIZE - 10; y > MARGIN + SIZE; y -= gap) dots.push({ x: MARGIN + SIZE/2, y, alive: true });
+      }
+      initDots();
+      window.addEventListener('resize', () => { initDots(); });
+
+      function drawPixel(grid, ox, oy, angle) {
+        ctx.save();
+        ctx.translate(ox + SIZE / 2, oy + SIZE / 2);
+        ctx.rotate(angle);
+        ctx.translate(-SIZE / 2, -SIZE / 2);
+        for (let r = 0; r < grid.length; r++) {
+          for (let c = 0; c < grid[r].length; c++) {
+            if (grid[r][c]) {
               ctx.fillStyle = COLOR;
-              ctx.fillRect(Math.floor(ant.x) + c * S, ANT_Y + r * S, S, S);
+              ctx.fillRect(c * S, r * S, S, S);
             }
           }
         }
+        // eye
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(4 * S, 1 * S, S, S);
+        ctx.restore();
       }
 
-      let tick = 0;
+      const DIR_ANGLE = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+
       function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (const ant of ants) {
-          ant.x += ant.speed;
-          if (ant.x > canvas.width) ant.x = -ANT_W;
-          if (tick % 10 === 0) ant.frame = (ant.frame + 1) % 2;
-          drawAnt(ant);
+
+        // Draw dots
+        for (const d of dots) {
+          if (!d.alive) continue;
+          ctx.fillStyle = DOT_COLOR;
+          ctx.fillRect(d.x - 3, d.y - 3, 6, 6);
         }
+
+        // Move pacman along perimeter
+        c = corners();
+        const targets = [
+          { x: c[1].x, y: c[0].y, dir: 0 }, // going right → corner top-right
+          { x: c[1].x, y: c[2].y, dir: 1 }, // going down → corner bottom-right
+          { x: c[3].x, y: c[2].y, dir: 2 }, // going left → corner bottom-left
+          { x: c[0].x, y: c[0].y, dir: 3 }, // going up → corner top-left
+        ];
+
+        const target = targets[corner];
+        const dx = target.x - pac.x;
+        const dy = target.y - pac.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if (dist < SPEED + 1) {
+          pac.x = target.x;
+          pac.y = target.y;
+          corner = (corner + 1) % 4;
+          pac.dir = targets[corner].dir;
+        } else {
+          pac.x += (dx / dist) * SPEED;
+          pac.y += (dy / dist) * SPEED;
+        }
+
+        // Eat dots
+        for (const d of dots) {
+          if (!d.alive) continue;
+          if (Math.abs(pac.x + SIZE/2 - d.x) < SIZE/2 + 4 &&
+              Math.abs(pac.y + SIZE/2 - d.y) < SIZE/2 + 4) {
+            d.alive = false;
+          }
+        }
+        // Respawn all when all eaten
+        if (dots.every(d => !d.alive)) dots.forEach(d => d.alive = true);
+
+        if (tick % 8 === 0) pac.frame = (pac.frame + 1) % 2;
+        drawPixel(FRAMES[pac.frame], pac.x, pac.y, DIR_ANGLE[pac.dir]);
+
         tick++;
         requestAnimationFrame(animate);
       }
