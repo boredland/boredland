@@ -329,7 +329,7 @@
       // Win state
       let winning = false;
       let winTick = 0;
-      const WIN_FRAMES = 300; // 5s at 60fps
+      const WIN_FRAMES = 150; // 2.5s at 60fps
 
       // Dots along the perimeter
       let dots = [];
@@ -724,13 +724,13 @@
           // Pulsing full-screen color flash
           const flashPhase = Math.sin(winTick * 0.4);
           ctx.save();
-          ctx.globalAlpha = Math.max(0, flashPhase * 0.18);
+          ctx.globalAlpha = Math.max(0, flashPhase * 0.08);
           ctx.fillStyle = winTick % 20 < 10 ? COLOR : DOT_COLOR;
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.restore();
 
-          // Atari-style firework bursts every 18 ticks
-          if (winTick % 18 === 0) {
+          // Atari-style firework bursts every 30 ticks
+          if (winTick % 30 === 0) {
             const bx = MARGIN + SIZE + Math.random() * (canvas.width - 2 * MARGIN - 2 * SIZE);
             const by = MARGIN + SIZE * 2 + Math.random() * (canvas.height - 2 * MARGIN - 4 * SIZE);
             // Strict Atari NTSC-ish palette: bright, saturated, limited
@@ -742,35 +742,31 @@
               ['#40ff40', '#ffffff'],          // green + white
             ];
             const pal = ATARI_PALETTES[Math.floor(Math.random() * ATARI_PALETTES.length)];
-            // 8-spoke starburst (evenly spaced, consistent speed = Atari look)
-            const spokeSpeed = 3 + Math.random() * 2;
-            for (let i = 0; i < 8; i++) {
-              const angle = (i / 8) * Math.PI * 2;
+            // 6-spoke starburst
+            const spokeSpeed = 2 + Math.random() * 1.5;
+            for (let i = 0; i < 6; i++) {
+              const angle = (i / 6) * Math.PI * 2;
               const col = i % 2 === 0 ? pal[0] : pal[1];
-              // Two pixels per spoke at different distances for a "star" feel
-              for (let r = 0; r < 2; r++) {
-                const spd = spokeSpeed * (0.5 + r * 0.7);
-                particles.push({
-                  x: bx, y: by,
-                  vx: Math.cos(angle) * spd,
-                  vy: Math.sin(angle) * spd,
-                  gravity: 0.12,    // Atari gravity: chunky arc
-                  size: r === 0 ? S * 2 : S,  // inner pixel bigger
-                  life: 1.0,
-                  color: col,
-                });
-              }
+              particles.push({
+                x: bx, y: by,
+                vx: Math.cos(angle) * spokeSpeed,
+                vy: Math.sin(angle) * spokeSpeed,
+                gravity: 0.10,
+                size: S,
+                life: 0.9,
+                color: col,
+              });
             }
-            // Central flash: 4 axis-aligned pixels (cross / +)
+            // Central flash: 4 axis-aligned pixels
             for (let i = 0; i < 4; i++) {
               const angle = (i / 4) * Math.PI * 2;
               particles.push({
                 x: bx, y: by,
-                vx: Math.cos(angle) * spokeSpeed * 1.4,
-                vy: Math.sin(angle) * spokeSpeed * 1.4,
+                vx: Math.cos(angle) * spokeSpeed * 1.2,
+                vy: Math.sin(angle) * spokeSpeed * 1.2,
                 gravity: 0.08,
                 size: S,
-                life: 0.7,
+                life: 0.5,
                 color: '#ffffff',
               });
             }
