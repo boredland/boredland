@@ -113,17 +113,20 @@
       /* Retro button overrides */
       .button {
         font-family: "Press Start 2P", monospace;
-        font-size: 14px;
-        border-radius: 0;
-        border: 2px solid #f0c040;
-        color: #f0c040;
-        background: transparent;
+        font-size: 12px;
+        border-radius: 0 !important;
+        border: 2px solid #f0c040 !important;
+        color: #f0c040 !important;
+        background: transparent !important;
         letter-spacing: 1px;
         transition: background 0.1s, color 0.1s, box-shadow 0.1s;
-        display: inline-block;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
         box-sizing: border-box;
-        width: 280px;
-        text-align: left;
+        width: 280px !important;
+        height: 48px !important;
+        line-height: normal !important;
       }
 
       .social-links {
@@ -133,8 +136,8 @@
         gap: 10px;
       }
       .button:hover {
-        background: #f0c040;
-        color: #0a0a0f;
+        background: #f0c040 !important;
+        color: #0a0a0f !important;
         box-shadow: 0 0 12px rgba(240, 192, 64, 0.7);
       }
 
@@ -227,7 +230,7 @@
 
           <!-- Short Bio + GitHub -->
           <div class="social-links">
-          <a href="https://github.com/boredland" target="_blank" rel="noopener" style="text-decoration:none;"><p style="font-family: monospace; font-size: 13px; background: #0d0d16; border: 2px solid #f0c040; padding: 0.5em 0.8em; display: inline-block; color: #f0c040; text-shadow: 0 0 6px rgba(240,192,64,0.4); transition: box-shadow 0.1s; box-sizing: border-box; width: 280px; margin-bottom: 0;">$ git blame <span style="color:#d060b0;">github.com/boredland</span></p></a>
+          <a href="https://github.com/boredland" target="_blank" rel="noopener" style="text-decoration:none;"><p style="font-family: monospace; font-size: 13px; background: #0d0d16; border: 2px solid #f0c040; padding: 0; display: flex; align-items: center; justify-content: center; color: #f0c040; text-shadow: 0 0 6px rgba(240,192,64,0.4); transition: box-shadow 0.1s; box-sizing: border-box; width: 280px; height: 48px; margin: 0;">$ git blame <span style="color:#d060b0; margin-left: 0.4em;">github.com/boredland</span></p></a>
 
           <!-- X -->
           <a class="button button-x" href="https://twitter.com/boredland069" target="_blank" rel="noopener" role="button">
