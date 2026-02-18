@@ -41,37 +41,56 @@
         line-height: 33px;
       }
 
-      /* CRT effects */
-      body::after {
+      /* CRT avatar wrapper */
+      .crt-avatar {
+        position: relative;
+        display: inline-block;
+        border-radius: 50%;
+        overflow: hidden;
+      }
+      .crt-avatar::after {
         content: "";
-        position: fixed;
+        position: absolute;
         inset: 0;
-        /* Scanlines + subtle phosphor glow between them */
+        border-radius: 50%;
         background:
           repeating-linear-gradient(
             to bottom,
-            rgba(0,0,0,0.25) 0px,
-            rgba(0,0,0,0.25) 1px,
-            rgba(255,255,220,0.02) 1px,
-            rgba(255,255,220,0.02) 2px,
+            rgba(0,0,0,0.22) 0px,
+            rgba(0,0,0,0.22) 1px,
+            rgba(255,255,220,0.03) 1px,
+            rgba(255,255,220,0.03) 2px,
             transparent 2px,
             transparent 4px
           );
         pointer-events: none;
-        z-index: 9999;
+        z-index: 1;
       }
-      /* Vignette */
-      body::before {
+      .crt-avatar::before {
         content: "";
-        position: fixed;
+        position: absolute;
         inset: 0;
+        border-radius: 50%;
         background: radial-gradient(
           ellipse at center,
-          transparent 60%,
-          rgba(0,0,0,0.55) 100%
+          transparent 50%,
+          rgba(0,0,0,0.5) 100%
         );
         pointer-events: none;
-        z-index: 9999;
+        z-index: 2;
+      }
+      @keyframes crt-flicker {
+        0%   { opacity: 1; }
+        92%  { opacity: 1; }
+        93%  { opacity: 0.85; }
+        94%  { opacity: 1; }
+        97%  { opacity: 1; }
+        98%  { opacity: 0.9; }
+        100% { opacity: 1; }
+      }
+      .crt-avatar img {
+        display: block;
+        animation: crt-flicker 6s infinite;
       }
 
       h1 {
@@ -139,6 +158,25 @@
         background: #f0c040 !important;
         color: #0a0a0f !important;
         box-shadow: 0 0 12px rgba(240, 192, 64, 0.7);
+      }
+      .git-blame-btn {
+        font-family: monospace !important;
+        font-size: 13px !important;
+        letter-spacing: 0 !important;
+        background: #0d0d16 !important;
+        text-shadow: 0 0 6px rgba(240,192,64,0.4);
+        text-decoration: none;
+      }
+      .git-blame-btn .blame-host {
+        color: #d060b0;
+        margin-left: 0.4em;
+        transition: color 0.1s;
+      }
+      .git-blame-btn:hover {
+        text-shadow: none;
+      }
+      .git-blame-btn:hover .blame-host {
+        color: #0a0a0f;
       }
 
       a {
@@ -217,6 +255,7 @@
       <div class="row">
         <div class="column" style="margin-top: 10%; text-align: center">
           <!-- Your Image Here -->
+          <div class="crt-avatar">
           <img
             src="https://wsrv.nl/?url=avatars.githubusercontent.com/u/4662748?s=242&output=webp&maxage=1y"
             alt="Picture of Jonas Strassel"
@@ -224,13 +263,14 @@
             width="161px"
             height="161px"
           />
+          </div>
 
           <!-- Title -->
           <h1 class="gradient-name">Jonas Strassel</h1>
 
           <!-- Short Bio + GitHub -->
           <div class="social-links">
-          <a href="https://github.com/boredland" target="_blank" rel="noopener" style="text-decoration:none;"><p style="font-family: monospace; font-size: 13px; background: #0d0d16; border: 2px solid #f0c040; padding: 0; display: flex; align-items: center; justify-content: center; color: #f0c040; text-shadow: 0 0 6px rgba(240,192,64,0.4); transition: box-shadow 0.1s; box-sizing: border-box; width: 280px; height: 48px; margin: 0;">$ git blame <span style="color:#d060b0; margin-left: 0.4em;">github.com/boredland</span></p></a>
+          <a class="button git-blame-btn" href="https://github.com/boredland" target="_blank" rel="noopener">$ git blame <span class="blame-host">github.com/boredland</span></a>
 
           <!-- X -->
           <a class="button button-x" href="https://twitter.com/boredland069" target="_blank" rel="noopener" role="button">
@@ -774,28 +814,6 @@
             fruits = [];
             spawnFruit(); spawnFruit();
           }
-        }
-
-        // CRT effects: rolling dim band + occasional brightness spike
-        // Slow rolling horizontal band (like a CRT refresh artifact)
-        {
-          const bandY = ((tick * 1.2) % (canvas.height + 80)) - 40;
-          const grad = ctx.createLinearGradient(0, bandY, 0, bandY + 80);
-          grad.addColorStop(0, 'rgba(0,0,0,0)');
-          grad.addColorStop(0.5, 'rgba(0,0,0,0.06)');
-          grad.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.save();
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, bandY, canvas.width, 80);
-          ctx.restore();
-        }
-        // Rare brightness flicker
-        if (Math.random() < 0.003) {
-          ctx.save();
-          ctx.globalAlpha = Math.random() * 0.15 + 0.03;
-          ctx.fillStyle = '#ffffee';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.restore();
         }
 
         tick++;
