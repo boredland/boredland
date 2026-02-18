@@ -314,6 +314,11 @@
       let deathTick = 0;      // 0-60 frames
       const DEATH_FRAMES = 50;
 
+      // Win state
+      let winning = false;
+      let winTick = 0;
+      const WIN_FRAMES = 80;
+
       // Dots along the perimeter
       let dots = [];
       function initDots() {
@@ -624,11 +629,50 @@
               f.alive = false;
             }
           }
-          // Respawn all dots when all eaten
-          if (dots.every(d => !d.alive)) dots.forEach(d => d.alive = true);
+          // Respawn all dots when all eaten → trigger win
+          if (dots.every(d => !d.alive)) {
+            winning = true;
+            winTick = 0;
+          }
 
-          if (tick % 8 === 0) pac.frame = (pac.frame + 1) % 2;
-          drawPixel(FRAMES[pac.frame], pac.x, pac.y, DIR_ANGLE[pac.dir]);
+          if (!winning) {
+            if (tick % 8 === 0) pac.frame = (pac.frame + 1) % 2;
+            drawPixel(FRAMES[pac.frame], pac.x, pac.y, DIR_ANGLE[pac.dir]);
+          }
+        }
+
+        // Win animation: pacman spins in place + screen flash
+        if (winning) {
+          const progress = winTick / WIN_FRAMES;
+          // Flash the background every 6 frames in first half
+          if (winTick < WIN_FRAMES * 0.6 && Math.floor(winTick / 6) % 2 === 0) {
+            ctx.save();
+            ctx.globalAlpha = 0.12;
+            ctx.fillStyle = COLOR;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+          }
+          // Spin pacman: rotate full 360° twice over the animation
+          const spinAngle = progress * Math.PI * 4;
+          const cx = pac.x + SIZE / 2, cy = pac.y + SIZE / 2;
+          const r = SIZE / 2;
+          const openAngle = 0.35; // fixed open mouth
+          ctx.save();
+          ctx.fillStyle = COLOR;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, r, spinAngle + openAngle, spinAngle + Math.PI * 2 - openAngle);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          winTick++;
+          if (winTick > WIN_FRAMES) {
+            winning = false;
+            winTick = 0;
+            dots.forEach(d => d.alive = true);
+            fruits = [];
+            spawnFruit(); spawnFruit();
+          }
         }
 
         tick++;
