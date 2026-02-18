@@ -118,8 +118,8 @@
         align-items: center;
         gap: 10px;
       }
-      /* Hide the default floating formbutton trigger */
-      #formbutton-button { display: none !important; }
+      /* Hide the default floating formbutton trigger visually, keep it clickable */
+      #formbutton-button { opacity: 0 !important; pointer-events: none !important; position: fixed !important; }
       .button:hover {
         background: #f0c040 !important;
         color: #0a0a0f !important;
@@ -250,7 +250,7 @@
             <img class="icon" src="assets/icons/matrix.svg" alt="Matrix Logo">Matrix</a>
 
           <!-- Contact -->
-          <button class="button" style="cursor:pointer;" onclick="formbutton('open')">✉ Contact</button>
+          <button class="button" style="cursor:pointer;" onclick="document.getElementById('formbutton-button').click()">✉ Contact</button>
           </div>
         </div>
       </div>
