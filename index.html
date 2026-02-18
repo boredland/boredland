@@ -641,34 +641,56 @@
           }
         }
 
-        // Win animation: pacman spins in place + screen flash
+        // Win animation: fireworks + growing pacman + screen flash
         if (winning) {
           const progress = winTick / WIN_FRAMES;
-          // Flash the background every 6 frames in first half
-          if (winTick < WIN_FRAMES * 0.6 && Math.floor(winTick / 6) % 2 === 0) {
-            ctx.save();
-            ctx.globalAlpha = 0.12;
-            ctx.fillStyle = COLOR;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.restore();
-          }
-          // Spin pacman: rotate full 360° twice over the animation
-          const spinAngle = progress * Math.PI * 4;
-          const cx = pac.x + SIZE / 2, cy = pac.y + SIZE / 2;
-          const r = SIZE / 2;
-          const openAngle = 0.35; // fixed open mouth
+
+          // Pulsing full-screen color flash
+          const flashPhase = Math.sin(winTick * 0.4);
           ctx.save();
+          ctx.globalAlpha = Math.max(0, flashPhase * 0.18);
+          ctx.fillStyle = winTick % 20 < 10 ? COLOR : DOT_COLOR;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.restore();
+
+          // Firework bursts: spawn a burst every 10 ticks in first 3/4
+          if (winTick % 10 === 0 && progress < 0.75) {
+            const bx = MARGIN + SIZE + Math.random() * (canvas.width - 2 * MARGIN - 2 * SIZE);
+            const by = MARGIN + SIZE + Math.random() * (canvas.height - 2 * MARGIN - 2 * SIZE);
+            const fwColors = [COLOR, DOT_COLOR, '#ffffff', '#ff4466', '#00ffff'];
+            const fwColor = fwColors[Math.floor(Math.random() * fwColors.length)];
+            for (let i = 0; i < 16; i++) {
+              const angle = (i / 16) * Math.PI * 2;
+              const speed = Math.random() * 4 + 2;
+              particles.push({ x: bx, y: by, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1.0, color: fwColor });
+            }
+          }
+
+          // Spin & grow pacman
+          const spinAngle = progress * Math.PI * 6; // 3 full spins
+          const growR = (SIZE / 2) * (1 + progress * 1.5); // grows to 2.5× size
+          const cx = pac.x + SIZE / 2, cy = pac.y + SIZE / 2;
+          const openAngle = 0.35;
+          ctx.save();
+          ctx.globalAlpha = 1 - progress * 0.3;
           ctx.fillStyle = COLOR;
           ctx.beginPath();
           ctx.moveTo(cx, cy);
-          ctx.arc(cx, cy, r, spinAngle + openAngle, spinAngle + Math.PI * 2 - openAngle);
+          ctx.arc(cx, cy, growR, spinAngle + openAngle, spinAngle + Math.PI * 2 - openAngle);
           ctx.closePath();
           ctx.fill();
           ctx.restore();
+
           winTick++;
           if (winTick > WIN_FRAMES) {
             winning = false;
             winTick = 0;
+            // Full reset
+            const rc = corners();
+            pac.x = rc[0].x; pac.y = rc[0].y;
+            corner = 0;
+            pac.dir = 0;
+            pac.frame = 0;
             dots.forEach(d => d.alive = true);
             fruits = [];
             spawnFruit(); spawnFruit();
