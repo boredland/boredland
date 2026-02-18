@@ -457,6 +457,11 @@
       // Classic ghost colors: Blinky red, Pinky pink, Inky cyan, Clyde orange
       const GHOST_COLORS = ['#ff0000', '#ffb8ff', '#00ffff', '#ffb852'];
 
+      // Frightened state
+      let frightenedTicks = 0;
+      const FRIGHTENED_DURATION = 300; // ~5s at 60fps
+      const FRIGHTENED_FLASH_START = 80; // start flashing in last 80 ticks
+
       const ghosts = GHOST_COLORS.map((color, i) => ({
         color,
         x: Math.random() * (window.innerWidth - SIZE),
@@ -466,17 +471,31 @@
         frame: i % 2,
       }));
 
+      function respawnGhost(g) {
+        g.x = Math.random() * (canvas.width - SIZE);
+        g.y = Math.random() * (canvas.height - SIZE);
+      }
+
       function drawGhost(ghost, frame) {
         const grid = GHOST_FRAMES[frame];
         const ox = ghost.x, oy = ghost.y;
+        const frightened = frightenedTicks > 0;
+        const flashing = frightenedTicks > 0 && frightenedTicks < FRIGHTENED_FLASH_START;
+        const showWhite = flashing && Math.floor(tick / 8) % 2 === 0;
         ctx.save();
-        ctx.globalAlpha = 0.38;
+        ctx.globalAlpha = frightened ? 0.85 : 0.2;
         for (let r = 0; r < grid.length; r++) {
           for (let col = 0; col < grid[r].length; col++) {
             if (!grid[r][col]) continue;
             const isEyeWhite = r === 2 && (col === 1 || col === 5);
             const isEyePupil = r === 3 && (col === 1 || col === 5);
-            ctx.fillStyle = isEyeWhite ? '#ffffff' : isEyePupil ? '#2121de' : ghost.color;
+            let color;
+            if (frightened) {
+              color = isEyeWhite ? '#ffaaaa' : isEyePupil ? '#ff2222' : (showWhite ? '#ffffff' : '#2121de');
+            } else {
+              color = isEyeWhite ? '#ffffff' : isEyePupil ? '#2121de' : ghost.color;
+            }
+            ctx.fillStyle = color;
             ctx.fillRect(ox + col * S, oy + r * S, S, S);
           }
         }
@@ -531,6 +550,7 @@
 
         // Ghosts (background, drawn first)
         updateGhosts();
+        if (frightenedTicks > 0) frightenedTicks--;
         const ghostFrame = Math.floor(tick / 8) % 2;
         for (const g of ghosts) drawGhost(g, ghostFrame);
 
@@ -582,6 +602,7 @@
             pac.dir = 0;
             dots.forEach(d => d.alive = true);
             fruits = [];
+            frightenedTicks = 0;
             spawnFruit(); spawnFruit();
           }
         } else {
@@ -609,12 +630,20 @@
             pac.y += (dy / dist) * SPEED;
           }
 
-          // Ghost collision → die
+          // Ghost collision → die or eat
           for (const g of ghosts) {
             if (Math.abs(pac.x + SIZE/2 - (g.x + SIZE/2)) < SIZE * 0.8 &&
                 Math.abs(pac.y + SIZE/2 - (g.y + SIZE/2)) < SIZE * 0.8) {
-              dying = true;
-              deathTick = 0;
+              if (frightenedTicks > 0) {
+                // Eat the ghost
+                spawnParticles(g.x + SIZE/2, g.y + SIZE/2, g.color);
+                spawnParticles(g.x + SIZE/2, g.y + SIZE/2, '#ffffff');
+                respawnGhost(g);
+              } else {
+                dying = true;
+                deathTick = 0;
+                frightenedTicks = 0;
+              }
               break;
             }
           }
@@ -636,6 +665,7 @@
               spawnParticles(f.x + SIZE/2, f.y + SIZE/2, f.def.colorMap(4, 4));
               spawnParticles(f.x + SIZE/2, f.y + SIZE/2, '#ffffff');
               f.alive = false;
+              frightenedTicks = FRIGHTENED_DURATION;
             }
           }
           // Respawn all dots when all eaten → trigger win
