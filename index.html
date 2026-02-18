@@ -390,8 +390,7 @@
         const def = FRUIT_DEFS[Math.floor(Math.random() * FRUIT_DEFS.length)];
         fruits.push({ x: fx, y: fy, def, alive: true });
       }
-      // Start with 2 fruits, respawn a new one 3s after one is eaten
-      spawnFruit(); spawnFruit();
+      // Fruits spawn on reset only
 
       function drawFruit(fruit) {
         const { grid, colorMap } = fruit.def;
@@ -562,12 +561,14 @@
           if (deathTick > DEATH_FRAMES) {
             dying = false;
             deathTick = 0;
-            // Respawn at start, reset dots
+            // Respawn at start, reset dots and fruits
             const rc = corners();
             pac.x = rc[0].x; pac.y = rc[0].y;
             corner = 0;
             pac.dir = 0;
             dots.forEach(d => d.alive = true);
+            fruits = [];
+            spawnFruit(); spawnFruit();
           }
         } else {
           // Move pacman along perimeter
@@ -621,7 +622,6 @@
               spawnParticles(f.x + SIZE/2, f.y + SIZE/2, f.def.colorMap(4, 4));
               spawnParticles(f.x + SIZE/2, f.y + SIZE/2, '#ffffff');
               f.alive = false;
-              setTimeout(spawnFruit, 3000);
             }
           }
           // Respawn all dots when all eaten
