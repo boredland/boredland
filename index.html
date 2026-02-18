@@ -41,17 +41,34 @@
         line-height: 33px;
       }
 
-      /* CRT scanline overlay */
+      /* CRT effects */
       body::after {
         content: "";
         position: fixed;
         inset: 0;
-        background: repeating-linear-gradient(
-          to bottom,
-          transparent,
-          transparent 2px,
-          rgba(0, 0, 0, 0.15) 2px,
-          rgba(0, 0, 0, 0.15) 4px
+        /* Scanlines + subtle phosphor glow between them */
+        background:
+          repeating-linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.25) 0px,
+            rgba(0,0,0,0.25) 1px,
+            rgba(255,255,220,0.02) 1px,
+            rgba(255,255,220,0.02) 2px,
+            transparent 2px,
+            transparent 4px
+          );
+        pointer-events: none;
+        z-index: 9999;
+      }
+      /* Vignette */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at center,
+          transparent 60%,
+          rgba(0,0,0,0.55) 100%
         );
         pointer-events: none;
         z-index: 9999;
@@ -751,11 +768,24 @@
           }
         }
 
-        // CRT flicker: random brief brightness spike
-        if (Math.random() < 0.004) {
+        // CRT effects: rolling dim band + occasional brightness spike
+        // Slow rolling horizontal band (like a CRT refresh artifact)
+        {
+          const bandY = ((tick * 1.2) % (canvas.height + 80)) - 40;
+          const grad = ctx.createLinearGradient(0, bandY, 0, bandY + 80);
+          grad.addColorStop(0, 'rgba(0,0,0,0)');
+          grad.addColorStop(0.5, 'rgba(0,0,0,0.06)');
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
           ctx.save();
-          ctx.globalAlpha = Math.random() * 0.25 + 0.05;
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, bandY, canvas.width, 80);
+          ctx.restore();
+        }
+        // Rare brightness flicker
+        if (Math.random() < 0.003) {
+          ctx.save();
+          ctx.globalAlpha = Math.random() * 0.15 + 0.03;
+          ctx.fillStyle = '#ffffee';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.restore();
         }
