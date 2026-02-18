@@ -212,40 +212,18 @@
     <link rel="mask-icon" href="assets/safari-pinned-tab.svg" color="#5bbad5" />
     <script src="https://formspree.io/js/formbutton-v1.min.js" defer></script>
     <script>
-      /* paste this line in verbatim */
-      window.formbutton =
-        window.formbutton ||
-        function () {
-          (formbutton.q = formbutton.q || []).push(arguments);
-        };
-      /* customize formbutton below*/
+      window.formbutton = window.formbutton || function() {
+        (formbutton.q = formbutton.q || []).push(arguments);
+      };
       formbutton("create", {
         action: "https://formspree.io/f/info@jonas-strassel.de",
         title: "How can I help?",
         fields: [
-          {
-            type: "email",
-            label: "Email:",
-            name: "email",
-            required: true,
-            placeholder: "your@email.com",
-          },
-          {
-            type: "textarea",
-            label: "Message:",
-            name: "message",
-            placeholder: "What's on your mind?",
-          },
+          { type: "email", label: "Email:", name: "email", required: true, placeholder: "your@email.com" },
+          { type: "textarea", label: "Message:", name: "message", placeholder: "What's on your mind?" },
           { type: "submit" },
         ],
-        styles: {
-          title: {
-            backgroundColor: "gray",
-          },
-          button: {
-            backgroundColor: "gray",
-          },
-        },
+        styles: { title: { backgroundColor: "gray" }, button: { backgroundColor: "gray" } },
       });
     </script>
   </head>
@@ -305,12 +283,12 @@
             />Discord</a
           >
 
-      /* Matrix */
+          <!-- Matrix -->
           <a class="button button-matrix" href="https://matrix.to/#/@boredland:matrix.org" target="_blank" rel="noopener">
             <img class="icon" src="assets/icons/matrix.svg" alt="Matrix Logo">Matrix</a>
 
           <!-- Contact -->
-          <button class="button" onclick="formbutton('open')" style="cursor:pointer;">✉ Contact</button>
+          <button class="button" style="cursor:pointer;" onclick="formbutton('open')">✉ Contact</button>
           </div>
         </div>
       </div>
@@ -610,11 +588,13 @@
         for (const p of particles) {
           p.x += p.vx;
           p.y += p.vy;
-          p.life -= 0.06;
+          if (p.gravity) p.vy += p.gravity;
+          p.life -= p.gravity ? 0.025 : 0.06;  // firework particles linger longer
           ctx.save();
           ctx.globalAlpha = Math.max(0, p.life);
           ctx.fillStyle = p.color;
-          ctx.fillRect(p.x - S/2, p.y - S/2, S, S);
+          const sz = p.size || S;
+          ctx.fillRect(p.x - sz / 2, p.y - sz / 2, sz, sz);
           ctx.restore();
         }
       }
@@ -789,16 +769,50 @@
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.restore();
 
-          // Firework bursts every 10 ticks
-          if (winTick % 10 === 0) {
+          // Atari-style firework bursts every 18 ticks
+          if (winTick % 18 === 0) {
             const bx = MARGIN + SIZE + Math.random() * (canvas.width - 2 * MARGIN - 2 * SIZE);
-            const by = MARGIN + SIZE + Math.random() * (canvas.height - 2 * MARGIN - 2 * SIZE);
-            const fwColors = [COLOR, DOT_COLOR, '#ffffff', '#ff4466', '#00ffff'];
-            const fwColor = fwColors[Math.floor(Math.random() * fwColors.length)];
-            for (let i = 0; i < 16; i++) {
-              const angle = (i / 16) * Math.PI * 2;
-              const speed = Math.random() * 4 + 2;
-              particles.push({ x: bx, y: by, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1.0, color: fwColor });
+            const by = MARGIN + SIZE * 2 + Math.random() * (canvas.height - 2 * MARGIN - 4 * SIZE);
+            // Strict Atari NTSC-ish palette: bright, saturated, limited
+            const ATARI_PALETTES = [
+              ['#f0c040', '#ffffff'],          // amber + white
+              ['#ff2020', '#ffaa00'],          // red + orange
+              ['#00d8d8', '#ffffff'],          // cyan + white
+              ['#d060b0', '#f0c040'],          // magenta + amber
+              ['#40ff40', '#ffffff'],          // green + white
+            ];
+            const pal = ATARI_PALETTES[Math.floor(Math.random() * ATARI_PALETTES.length)];
+            // 8-spoke starburst (evenly spaced, consistent speed = Atari look)
+            const spokeSpeed = 3 + Math.random() * 2;
+            for (let i = 0; i < 8; i++) {
+              const angle = (i / 8) * Math.PI * 2;
+              const col = i % 2 === 0 ? pal[0] : pal[1];
+              // Two pixels per spoke at different distances for a "star" feel
+              for (let r = 0; r < 2; r++) {
+                const spd = spokeSpeed * (0.5 + r * 0.7);
+                particles.push({
+                  x: bx, y: by,
+                  vx: Math.cos(angle) * spd,
+                  vy: Math.sin(angle) * spd,
+                  gravity: 0.12,    // Atari gravity: chunky arc
+                  size: r === 0 ? S * 2 : S,  // inner pixel bigger
+                  life: 1.0,
+                  color: col,
+                });
+              }
+            }
+            // Central flash: 4 axis-aligned pixels (cross / +)
+            for (let i = 0; i < 4; i++) {
+              const angle = (i / 4) * Math.PI * 2;
+              particles.push({
+                x: bx, y: by,
+                vx: Math.cos(angle) * spokeSpeed * 1.4,
+                vy: Math.sin(angle) * spokeSpeed * 1.4,
+                gravity: 0.08,
+                size: S,
+                life: 0.7,
+                color: '#ffffff',
+              });
             }
           }
 
