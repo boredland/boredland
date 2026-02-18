@@ -327,6 +327,79 @@
       initDots();
       window.addEventListener('resize', () => { initDots(); });
 
+      // ── Fruits ──────────────────────────────────────────────────────────────
+      // Each fruit is an 8×8 pixel grid with a color, drawn on the perimeter
+      const FRUIT_DEFS = [
+        { name: 'cherry', color: ['#ff2020', '#ff2020', '#22aa22', '#22aa22'], grid: [
+          [0,0,0,1,1,0,0,0],
+          [0,0,1,0,0,1,0,0],
+          [0,0,0,1,0,0,0,0],
+          [0,1,1,0,0,0,0,0],
+          [1,1,1,1,0,1,1,0],
+          [1,1,1,1,1,1,1,0],
+          [0,1,1,1,1,1,0,0],
+          [0,0,1,1,1,0,0,0],
+        ], colorMap: (r,c) => r < 3 ? '#22aa22' : '#ff2020' },
+        { name: 'strawberry', colorMap: (r,c) => r === 0 ? '#22aa22' : (r<2&&c>=2&&c<=5) ? '#22aa22' : '#ff4466', grid: [
+          [0,0,1,1,1,0,0,0],
+          [0,1,1,1,1,1,0,0],
+          [1,1,1,1,1,1,1,0],
+          [1,1,0,1,1,0,1,0],
+          [1,1,1,1,1,1,1,0],
+          [0,1,1,1,1,1,0,0],
+          [0,0,1,1,1,0,0,0],
+          [0,0,0,1,0,0,0,0],
+        ]},
+        { name: 'orange', colorMap: (r,c) => (r===0&&c===3) ? '#22aa22' : '#ff8800', grid: [
+          [0,0,0,1,0,0,0,0],
+          [0,0,1,1,1,1,0,0],
+          [0,1,1,1,1,1,1,0],
+          [1,1,1,1,1,1,1,1],
+          [1,1,1,1,1,1,1,1],
+          [0,1,1,1,1,1,1,0],
+          [0,0,1,1,1,1,0,0],
+          [0,0,0,1,1,0,0,0],
+        ]},
+        { name: 'melon', colorMap: (r,c) => (r<=1) ? '#22aa22' : '#44dd44', grid: [
+          [0,0,1,1,1,1,0,0],
+          [0,1,0,0,0,0,1,0],
+          [1,0,1,0,1,0,0,1],
+          [1,0,0,1,0,1,0,1],
+          [1,0,1,0,1,0,0,1],
+          [1,0,0,1,0,1,0,1],
+          [0,1,0,0,0,0,1,0],
+          [0,0,1,1,1,1,0,0],
+        ]},
+      ];
+
+      let fruits = [];
+      function spawnFruit() {
+        const W = canvas.width, H = canvas.height;
+        // Pick a random perimeter position
+        const side = Math.floor(Math.random() * 4);
+        let fx, fy;
+        if (side === 0) { fx = MARGIN + SIZE + Math.random() * (W - 2*MARGIN - 2*SIZE); fy = MARGIN; }
+        else if (side === 1) { fx = W - MARGIN - SIZE; fy = MARGIN + SIZE + Math.random() * (H - 2*MARGIN - 2*SIZE); }
+        else if (side === 2) { fx = MARGIN + SIZE + Math.random() * (W - 2*MARGIN - 2*SIZE); fy = H - MARGIN - SIZE; }
+        else { fx = MARGIN; fy = MARGIN + SIZE + Math.random() * (H - 2*MARGIN - 2*SIZE); }
+        const def = FRUIT_DEFS[Math.floor(Math.random() * FRUIT_DEFS.length)];
+        fruits.push({ x: fx, y: fy, def, alive: true });
+      }
+      // Start with 2 fruits, respawn a new one 3s after one is eaten
+      spawnFruit(); spawnFruit();
+
+      function drawFruit(fruit) {
+        const { grid, colorMap } = fruit.def;
+        for (let r = 0; r < grid.length; r++) {
+          for (let col = 0; col < grid[r].length; col++) {
+            if (!grid[r][col]) continue;
+            ctx.fillStyle = colorMap(r, col);
+            ctx.fillRect(fruit.x + col * S, fruit.y + r * S, S, S);
+          }
+        }
+      }
+      // ────────────────────────────────────────────────────────────────────────
+
       function drawPixel(grid, ox, oy, angle) {
         ctx.save();
         ctx.translate(ox + SIZE / 2, oy + SIZE / 2);
@@ -427,6 +500,9 @@
         const ghostFrame = Math.floor(tick / 8) % 2;
         for (const g of ghosts) drawGhost(g, ghostFrame);
 
+        // Fruits
+        fruits = fruits.filter(f => f.alive);
+        for (const f of fruits) drawFruit(f);
         // Move pacman along perimeter
         c = corners();
         const targets = [
@@ -457,6 +533,15 @@
           if (Math.abs(pac.x + SIZE/2 - d.x) < SIZE/2 + 4 &&
               Math.abs(pac.y + SIZE/2 - d.y) < SIZE/2 + 4) {
             d.alive = false;
+          }
+        }
+        // Eat fruits
+        for (const f of fruits) {
+          if (!f.alive) continue;
+          if (Math.abs(pac.x + SIZE/2 - (f.x + SIZE/2)) < SIZE &&
+              Math.abs(pac.y + SIZE/2 - (f.y + SIZE/2)) < SIZE) {
+            f.alive = false;
+            setTimeout(spawnFruit, 3000);
           }
         }
         // Respawn all when all eaten
