@@ -395,7 +395,8 @@
         const def = FRUIT_DEFS[Math.floor(Math.random() * FRUIT_DEFS.length)];
         fruits.push({ x: fx, y: fy, def, alive: true });
       }
-      // Fruits spawn on reset only
+      // Fruits: spawn 2 on load and on each reset
+      spawnFruit(); spawnFruit();
 
       function drawFruit(fruit) {
         const { grid, colorMap } = fruit.def;
