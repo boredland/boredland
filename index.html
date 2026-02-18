@@ -549,16 +549,25 @@
         updateParticles();
 
         if (dying) {
-          // Death animation: arc closes from open-mouth wedge to nothing
-          const progress = deathTick / DEATH_FRAMES; // 0 → 1
-          const openAngle = (1 - progress) * Math.PI; // full half-circle → 0
+          // Death animation: mouth opens wide while body rotates up (like the original arcade)
+          // Gap starts small (facing direction pac was moving), opens to full circle,
+          // rotates clockwise so the last sliver points upward.
+          const progress = deathTick / DEATH_FRAMES;
           const cx = pac.x + SIZE / 2, cy = pac.y + SIZE / 2;
-          const r = (SIZE / 2) * (1 - progress * 0.5); // shrink slightly too
+          const r = SIZE / 2;
+          const DIR_INITIAL_GAP = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+          const initialGapCenter = DIR_INITIAL_GAP[pac.dir] || 0;
+          const initialHalfGap = 0.2; // small mouth at start
+          // gap half-angle opens from 0.2 → π (full circle = nothing left)
+          const halfGap = initialHalfGap + progress * (Math.PI - initialHalfGap) * 0.999;
+          // gap center rotates clockwise by π/2 so sliver ends pointing up
+          const gapCenter = initialGapCenter + progress * Math.PI * 0.5;
           ctx.save();
           ctx.fillStyle = COLOR;
           ctx.beginPath();
           ctx.moveTo(cx, cy);
-          ctx.arc(cx, cy, r, openAngle, Math.PI * 2 - openAngle);
+          // draw the remaining body arc (clockwise from one gap edge to the other)
+          ctx.arc(cx, cy, r, gapCenter + halfGap, gapCenter - halfGap);
           ctx.closePath();
           ctx.fill();
           ctx.restore();
