@@ -459,7 +459,7 @@
 
       // Frightened state
       let frightenedTicks = 0;
-      const FRIGHTENED_DURATION = 300; // ~5s at 60fps
+      const FRIGHTENED_DURATION = 600; // ~10s at 60fps
       const FRIGHTENED_FLASH_START = 80; // start flashing in last 80 ticks
 
       const ghosts = GHOST_COLORS.map((color, i) => ({
@@ -483,7 +483,7 @@
         const flashing = frightenedTicks > 0 && frightenedTicks < FRIGHTENED_FLASH_START;
         const showWhite = flashing && Math.floor(tick / 8) % 2 === 0;
         ctx.save();
-        ctx.globalAlpha = frightened ? 0.85 : 0.2;
+        ctx.globalAlpha = frightened ? 0.85 : 0.5;
         for (let r = 0; r < grid.length; r++) {
           for (let col = 0; col < grid[r].length; col++) {
             if (!grid[r][col]) continue;
