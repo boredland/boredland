@@ -154,6 +154,8 @@
         align-items: center;
         gap: 10px;
       }
+      /* Hide the default floating formbutton trigger */
+      #formbutton-button { display: none !important; }
       .button:hover {
         background: #f0c040 !important;
         color: #0a0a0f !important;
@@ -303,9 +305,12 @@
             />Discord</a
           >
 
-          <!-- Matrix -->
+      /* Matrix */
           <a class="button button-matrix" href="https://matrix.to/#/@boredland:matrix.org" target="_blank" rel="noopener">
             <img class="icon" src="assets/icons/matrix.svg" alt="Matrix Logo">Matrix</a>
+
+          <!-- Contact -->
+          <button class="button" onclick="formbutton('open')" style="cursor:pointer;">✉ Contact</button>
           </div>
         </div>
       </div>
