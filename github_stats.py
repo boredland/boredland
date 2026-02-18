@@ -137,9 +137,14 @@ class Queries(object):
                     await asyncio.sleep(2)
                     continue
                 if r_async.status in (429, 403):
-                    retry_after = int(r_async.headers.get("Retry-After", 60))
-                    log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_async.status, retry_after, attempt + 1)
-                    await asyncio.sleep(retry_after)
+                    retry_after = r_async.headers.get("Retry-After")
+                    if retry_after is None and r_async.status == 403:
+                        body = await r_async.json()
+                        log.warning("REST %s: permission denied (HTTP 403): %s", path, body.get("message", ""))
+                        return dict()
+                    wait = int(retry_after) if retry_after else 60
+                    log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_async.status, wait, attempt + 1)
+                    await asyncio.sleep(wait)
                     continue
                 result = await r_async.json()
                 if result is not None:
@@ -158,9 +163,14 @@ class Queries(object):
                         await asyncio.sleep(2)
                         continue
                     elif r_requests.status_code in (429, 403):
-                        retry_after = int(r_requests.headers.get("Retry-After", 60))
-                        log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_requests.status_code, retry_after, attempt + 1)
-                        await asyncio.sleep(retry_after)
+                        retry_after = r_requests.headers.get("Retry-After")
+                        if retry_after is None and r_requests.status_code == 403:
+                            body = r_requests.json()
+                            log.warning("REST %s: permission denied (HTTP 403): %s", path, body.get("message", ""))
+                            return dict()
+                        wait = int(retry_after) if retry_after else 60
+                        log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_requests.status_code, wait, attempt + 1)
+                        await asyncio.sleep(wait)
                         continue
                     elif r_requests.status_code == 200:
                         return r_requests.json()
