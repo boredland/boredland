@@ -157,6 +157,60 @@
       a:hover {
         color: #d060b0;
       }
+
+      .projects-section {
+        margin-top: 60px;
+        text-align: center;
+      }
+      .projects-section h2 {
+        font-family: "Press Start 2P", monospace;
+        font-size: 18px;
+        color: #f0c040;
+        margin-bottom: 30px;
+        text-shadow: 0 0 8px rgba(240, 192, 64, 0.4);
+      }
+      .projects-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      @media (min-width: 550px) {
+        .projects-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .project-card {
+        border: 2px solid #f0c040;
+        padding: 16px;
+        text-align: left;
+        text-decoration: none;
+        display: block;
+        transition: background 0.1s, box-shadow 0.1s;
+      }
+      .project-card:hover {
+        background: rgba(240, 192, 64, 0.1);
+        box-shadow: 0 0 12px rgba(240, 192, 64, 0.4);
+      }
+      .project-card .project-name {
+        font-family: "Press Start 2P", monospace;
+        font-size: 12px;
+        color: #f0c040;
+        margin-bottom: 8px;
+      }
+      .project-card .project-desc {
+        font-size: 11px;
+        line-height: 20px;
+        color: #d0a030;
+        margin: 0;
+      }
+      .project-card .project-lang {
+        font-size: 10px;
+        color: #d060b0;
+        margin-top: 8px;
+        display: inline-block;
+      }
     </style>
 
     <!-- Favicon
@@ -257,6 +311,47 @@
 
           <!-- Contact -->
           <button class="button" style="cursor:pointer;" onclick="document.getElementById('formbutton-button').click()"><img class="icon" src="assets/icons/email.svg" alt="">Contact</button>
+          </div>
+
+          <div class="projects-section">
+            <h2>// Projects</h2>
+            <div class="projects-grid">
+              <a class="project-card" href="https://github.com/boredland/saferound" target="_blank" rel="noopener">
+                <div class="project-name">saferound</div>
+                <p class="project-desc">sum-safe rounding for number arrays</p>
+                <span class="project-lang">TypeScript</span>
+              </a>
+              <a class="project-card" href="https://github.com/boredland/aufteilung" target="_blank" rel="noopener">
+                <div class="project-name">aufteilung</div>
+                <p class="project-desc">The Karmarkar-Karp differencing algorithm in Typescript</p>
+                <span class="project-lang">TypeScript</span>
+              </a>
+              <a class="project-card" href="https://github.com/boredland/noise" target="_blank" rel="noopener">
+                <div class="project-name">noise</div>
+                <p class="project-desc">noise generator</p>
+                <span class="project-lang">JavaScript</span>
+              </a>
+              <a class="project-card" href="https://github.com/boredland/dowwntime" target="_blank" rel="noopener">
+                <div class="project-name">dowwntime</div>
+                <p class="project-desc">downtime-checks, easy as pie</p>
+                <span class="project-lang">TypeScript</span>
+              </a>
+              <a class="project-card" href="https://github.com/boredland/pdf-unlock" target="_blank" rel="noopener">
+                <div class="project-name">pdf-unlock</div>
+                <p class="project-desc">Unlock password-protected PDFs in your browser using WebAssembly</p>
+                <span class="project-lang">HTML</span>
+              </a>
+              <a class="project-card" href="https://github.com/boredland/kernel-info" target="_blank" rel="noopener">
+                <div class="project-name">kernel-info</div>
+                <p class="project-desc">webservice parsing kernel.org for kernel info</p>
+                <span class="project-lang">TypeScript</span>
+              </a>
+              <a class="project-card" href="https://github.com/boredland/dumm-rum" target="_blank" rel="noopener">
+                <div class="project-name">dumm-rum</div>
+                <p class="project-desc">Dumm rumstehen an Frankfurter Haltestellen seit 2026</p>
+                <span class="project-lang">TypeScript</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
