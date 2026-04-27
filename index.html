@@ -159,21 +159,35 @@
       }
 
       .projects-section {
-        margin-top: 60px;
+        margin-top: 80px;
         text-align: center;
+        position: relative;
       }
+
       .projects-section h2 {
         font-family: "Press Start 2P", monospace;
-        font-size: 18px;
+        font-size: 14px;
         color: #f0c040;
         margin-bottom: 30px;
         text-shadow: 0 0 8px rgba(240, 192, 64, 0.4);
+        letter-spacing: 3px;
+        position: relative;
+        display: inline-block;
       }
+      .projects-section h2::after {
+        content: "_";
+        animation: blink-cursor 0.8s step-end infinite;
+      }
+      @keyframes blink-cursor {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+
       .projects-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 12px;
-        max-width: 600px;
+        gap: 14px;
+        max-width: 640px;
         margin: 0 auto;
       }
       @media (min-width: 550px) {
@@ -181,35 +195,94 @@
           grid-template-columns: 1fr 1fr;
         }
       }
+
       .project-card {
-        border: 2px solid #f0c040;
-        padding: 16px;
+        position: relative;
+        padding: 20px 18px 16px;
         text-align: left;
         text-decoration: none;
         display: block;
-        transition: background 0.1s, box-shadow 0.1s;
+        background: rgba(10, 10, 15, 0.85);
+        border: 1px solid rgba(240, 192, 64, 0.25);
+        transition: border-color 0.15s, box-shadow 0.15s;
+        opacity: 0;
+        transform: translateY(8px);
       }
+      .project-card.visible {
+        animation: card-flicker-in 0.4s ease-out forwards;
+      }
+      @keyframes card-flicker-in {
+        0%   { opacity: 0; transform: translateY(8px); }
+        20%  { opacity: 0.6; transform: translateY(2px); }
+        35%  { opacity: 0.2; transform: translateY(2px); }
+        50%  { opacity: 0.8; transform: translateY(0); }
+        70%  { opacity: 0.5; }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+
+      .project-card::before,
+      .project-card::after {
+        content: "";
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-color: #f0c040;
+        border-style: solid;
+        transition: border-color 0.15s;
+      }
+      .project-card::before {
+        top: -1px;
+        left: -1px;
+        border-width: 2px 0 0 2px;
+      }
+      .project-card::after {
+        bottom: -1px;
+        right: -1px;
+        border-width: 0 2px 2px 0;
+      }
+
       .project-card:hover {
-        background: rgba(240, 192, 64, 0.1);
-        box-shadow: 0 0 12px rgba(240, 192, 64, 0.4);
+        border-color: #f0c040;
+        box-shadow:
+          0 0 12px rgba(240, 192, 64, 0.3),
+          inset 0 0 30px rgba(240, 192, 64, 0.04);
       }
+      .project-card:hover::before,
+      .project-card:hover::after {
+        border-color: #d060b0;
+      }
+
       .project-card .project-name {
         font-family: "Press Start 2P", monospace;
-        font-size: 12px;
+        font-size: 11px;
         color: #f0c040;
         margin-bottom: 8px;
+        text-shadow: 0 0 6px rgba(240, 192, 64, 0.3);
       }
+      .project-card:hover .project-name {
+        text-shadow: 0 0 10px rgba(240, 192, 64, 0.6);
+      }
+
       .project-card .project-desc {
-        font-size: 11px;
-        line-height: 20px;
-        color: #d0a030;
+        font-family: "Press Start 2P", monospace;
+        font-size: 8px;
+        line-height: 18px;
+        color: #8a7a50;
         margin: 0;
       }
+      .project-card:hover .project-desc {
+        color: #d0a030;
+      }
+
       .project-card .project-lang {
-        font-size: 10px;
-        color: #d060b0;
-        margin-top: 8px;
+        font-family: "Press Start 2P", monospace;
+        font-size: 8px;
+        color: #0a0a0f;
+        background: #d060b0;
+        padding: 2px 6px;
+        margin-top: 10px;
         display: inline-block;
+        text-shadow: none;
       }
     </style>
 
@@ -314,7 +387,7 @@
           </div>
 
           <div class="projects-section">
-            <h2>// Projects</h2>
+            <h2>SELECT GAME</h2>
             <div class="projects-grid">
               <a class="project-card" href="https://github.com/boredland/saferound" target="_blank" rel="noopener">
                 <div class="project-name">saferound</div>
@@ -326,7 +399,7 @@
                 <p class="project-desc">The Karmarkar-Karp differencing algorithm in Typescript</p>
                 <span class="project-lang">TypeScript</span>
               </a>
-              <a class="project-card" href="https://github.com/boredland/noise" target="_blank" rel="noopener">
+              <a class="project-card" href="https://noise.jonas-strassel.de/" target="_blank" rel="noopener">
                 <div class="project-name">noise</div>
                 <p class="project-desc">Browser-based audio noise reduction powered by DeepFilterNet3 via WebAssembly</p>
                 <span class="project-lang">JavaScript</span>
@@ -336,7 +409,7 @@
                 <p class="project-desc">downtime-checks, easy as pie</p>
                 <span class="project-lang">TypeScript</span>
               </a>
-              <a class="project-card" href="https://github.com/boredland/pdf-unlock" target="_blank" rel="noopener">
+              <a class="project-card" href="https://pdf-unlock.jonas-strassel.de/" target="_blank" rel="noopener">
                 <div class="project-name">pdf-unlock</div>
                 <p class="project-desc">Unlock password-protected PDFs in your browser using WebAssembly</p>
                 <span class="project-lang">HTML</span>
@@ -355,10 +428,6 @@
                 <div class="project-name">museumsufer</div>
                 <p class="project-desc">Exhibitions and events from Frankfurt's 40+ museums on a fast, searchable page</p>
               </a>
-            </div>
-
-            <h2 style="margin-top: 40px;">// References</h2>
-            <div class="projects-grid">
               <a class="project-card" href="https://github.com/manjaro-sway/manjaro-sway" target="_blank" rel="noopener">
                 <div class="project-name">manjaro-sway</div>
                 <p class="project-desc">Manjaro Linux with Wayland, Sway and a lot of love</p>
@@ -368,6 +437,22 @@
         </div>
       </div>
     </div>
+    <script>
+    (function () {
+      const cards = document.querySelectorAll('.project-card');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const card = entry.target;
+            const idx = Array.from(cards).indexOf(card);
+            setTimeout(() => card.classList.add('visible'), idx * 80);
+            observer.unobserve(card);
+          }
+        });
+      }, { threshold: 0.15 });
+      cards.forEach(c => observer.observe(c));
+    })();
+    </script>
     <script>
     (function () {
       const canvas = document.createElement('canvas');
