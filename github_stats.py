@@ -390,6 +390,7 @@ class Stats(object):
         self._cache: Dict = _load_cache()
         self._repo_pushed_at: Dict[str, str] = {}
         self._repo_archived: Dict[str, bool] = {}
+        self._repo_owned: Set[str] = set()
         self._new_cache_repos: Dict[str, Any] = {}
 
     async def to_str(self) -> str:
@@ -470,6 +471,7 @@ Languages:
                     continue
                 self._repos.add(name)
                 if name in owned_names:
+                    self._repo_owned.add(name)
                     self._stargazers += repo.get("stargazers").get("totalCount", 0)
                     self._forks += repo.get("forkCount", 0)
                 if pushed_at := repo.get("pushedAt"):
@@ -689,8 +691,10 @@ Languages:
             r = await self.queries.query_rest(f"/repos/{repo}/traffic/views")
             return sum(view.get("count", 0) for view in r.get("views", []))
 
-        repos = await self.repos
-        results = await asyncio.gather(*[fetch_repo_views(r) for r in repos])
+        await self.repos
+        owned = self._repo_owned
+        log.info("Fetching traffic views for %d owned repos", len(owned))
+        results = await asyncio.gather(*[fetch_repo_views(r) for r in owned])
         self._views = sum(results)
         return self._views
 
