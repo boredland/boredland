@@ -253,6 +253,7 @@ class Queries(object):
       }}
       nodes {{
         nameWithOwner
+        isArchived
         stargazers {{
           totalCount
         }}
@@ -285,6 +286,7 @@ class Queries(object):
       }}
       nodes {{
         nameWithOwner
+        isArchived
         stargazers {{
           totalCount
         }}
@@ -385,6 +387,7 @@ class Stats(object):
         self._views: Optional[int] = None
         self._cache: Dict = _load_cache()
         self._repo_pushed_at: Dict[str, str] = {}
+        self._repo_archived: Dict[str, bool] = {}
         self._new_cache_repos: Dict[str, Any] = {}
 
     async def to_str(self) -> str:
@@ -465,6 +468,7 @@ Languages:
                 self._forks += repo.get("forkCount", 0)
                 if pushed_at := repo.get("pushedAt"):
                     self._repo_pushed_at[name] = pushed_at
+                self._repo_archived[name] = bool(repo.get("isArchived"))
                 log.info("  Found repo: %s (pushed: %s)", name, repo.get("pushedAt", "unknown"))
 
                 for lang in repo.get("languages", {}).get("edges", []):
@@ -609,7 +613,14 @@ Languages:
 
         async def fetch_repo_lines(repo: str) -> Tuple[int, int]:
             pushed_at = self._repo_pushed_at.get(repo)
+            archived = self._repo_archived.get(repo, False)
             cached = cached_repos.get(repo, {})
+
+            if archived and cached:
+                log.info("  [archived]   %s — using cached value", repo)
+                self._new_cache_repos[repo] = {**cached, "archived": True}
+                return cached.get("additions", 0), cached.get("deletions", 0)
+
             if pushed_at and cached.get("pushedAt") == pushed_at:
                 log.info("  [cache hit]  %s", repo)
                 self._new_cache_repos[repo] = cached
@@ -637,6 +648,7 @@ Languages:
                 "pushedAt": pushed_at,
                 "additions": repo_additions,
                 "deletions": repo_deletions,
+                "archived": archived,
             }
             self.save_cache()
             return repo_additions, repo_deletions
