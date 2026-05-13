@@ -85,31 +85,50 @@ class Queries(object):
                 if r_async.status == 401:
                     body = await r_async.text()
                     raise RuntimeError(f"GraphQL auth failed (HTTP 401): {body[:200]} — check that the GH_TOKEN secret is a valid, non-expired PAT")
+                if r_async.status >= 500:
+                    body = await r_async.text()
+                    wait = min(60, 2 ** attempt)
+                    log.warning("GraphQL HTTP %d (transient). Waiting %ds... (attempt %d/10): %s", r_async.status, wait, attempt + 1, body[:120])
+                    await asyncio.sleep(wait)
+                    continue
                 if r_async.status >= 400:
                     body = await r_async.text()
                     log.error("GraphQL HTTP %d: %s", r_async.status, body[:200])
+                    return dict()
                 result = await r_async.json()
                 if result is not None:
                     if "errors" in result:
                         log.warning("GraphQL response contains errors: %s", result["errors"])
                     return result
             except Exception as e:
-                log.error("aiohttp failed for GraphQL query: %s — falling back to requests", e)
-                # Fall back on non-async requests
-                async with self.semaphore:
-                    r_requests = requests.post(
-                        "https://api.github.com/graphql",
-                        headers=headers,
-                        json={"query": generated_query},
-                    )
+                log.error("aiohttp failed for GraphQL query: %s — falling back to requests (attempt %d/10)", e, attempt + 1)
+                try:
+                    async with self.semaphore:
+                        r_requests = requests.post(
+                            "https://api.github.com/graphql",
+                            headers=headers,
+                            json={"query": generated_query},
+                            timeout=30,
+                        )
                     if r_requests.status_code in (429, 403):
                         retry_after = int(r_requests.headers.get("Retry-After", 60))
                         log.warning("GraphQL rate limited (HTTP %d). Waiting %ds... (attempt %d/10)", r_requests.status_code, retry_after, attempt + 1)
                         await asyncio.sleep(retry_after)
                         continue
-                    result = r_requests.json()
-                    if result is not None:
-                        return result
+                    if r_requests.status_code >= 500:
+                        wait = min(60, 2 ** attempt)
+                        log.warning("GraphQL fallback HTTP %d (transient). Waiting %ds... (attempt %d/10)", r_requests.status_code, wait, attempt + 1)
+                        await asyncio.sleep(wait)
+                        continue
+                    if r_requests.status_code != 200:
+                        log.error("GraphQL fallback HTTP %d: %s", r_requests.status_code, r_requests.text[:200])
+                        return dict()
+                    return r_requests.json()
+                except Exception as inner:
+                    wait = min(60, 2 ** attempt)
+                    log.warning("GraphQL fallback also failed: %s. Waiting %ds... (attempt %d/10)", inner, wait, attempt + 1)
+                    await asyncio.sleep(wait)
+                    continue
             break
 
         log.error("GraphQL query failed after all attempts")
@@ -155,23 +174,33 @@ class Queries(object):
                     log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_async.status, wait, attempt + 1)
                     await asyncio.sleep(wait)
                     continue
+                if r_async.status >= 500:
+                    wait = min(30, 2 ** min(attempt, 5))
+                    log.warning("REST %s HTTP %d (transient). Waiting %ds... (attempt %d/60)", path, r_async.status, wait, attempt + 1)
+                    await asyncio.sleep(wait)
+                    continue
+                if r_async.status >= 400:
+                    body = await r_async.text()
+                    log.error("REST %s HTTP %d: %s", path, r_async.status, body[:200])
+                    return dict()
                 result = await r_async.json()
                 if result is not None:
                     return result
             except Exception as e:
-                log.error("aiohttp failed for REST GET %s: %s — falling back to requests", path, e)
-                # Fall back on non-async requests
-                async with self.semaphore:
-                    r_requests = requests.get(
-                        f"https://api.github.com/{path}",
-                        headers=headers,
-                        params=tuple(params.items()),
-                    )
+                log.error("aiohttp failed for REST GET %s: %s — falling back to requests (attempt %d/60)", path, e, attempt + 1)
+                try:
+                    async with self.semaphore:
+                        r_requests = requests.get(
+                            f"https://api.github.com/{path}",
+                            headers=headers,
+                            params=tuple(params.items()),
+                            timeout=30,
+                        )
                     if r_requests.status_code == 202:
                         log.info("REST %s returned 202 (stats computing). Retrying... (attempt %d/60)", path, attempt + 1)
                         await asyncio.sleep(2)
                         continue
-                    elif r_requests.status_code in (429, 403):
+                    if r_requests.status_code in (429, 403):
                         retry_after = r_requests.headers.get("Retry-After")
                         if retry_after is None and r_requests.status_code == 403:
                             body = r_requests.json()
@@ -181,8 +210,20 @@ class Queries(object):
                         log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_requests.status_code, wait, attempt + 1)
                         await asyncio.sleep(wait)
                         continue
-                    elif r_requests.status_code == 200:
+                    if r_requests.status_code >= 500:
+                        wait = min(30, 2 ** min(attempt, 5))
+                        log.warning("REST %s fallback HTTP %d (transient). Waiting %ds... (attempt %d/60)", path, r_requests.status_code, wait, attempt + 1)
+                        await asyncio.sleep(wait)
+                        continue
+                    if r_requests.status_code == 200:
                         return r_requests.json()
+                    log.error("REST %s fallback HTTP %d: %s", path, r_requests.status_code, r_requests.text[:200])
+                    return dict()
+                except Exception as inner:
+                    wait = min(30, 2 ** min(attempt, 5))
+                    log.warning("REST %s fallback also failed: %s. Waiting %ds... (attempt %d/60)", path, inner, wait, attempt + 1)
+                    await asyncio.sleep(wait)
+                    continue
         log.error("REST %s: too many retries, data will be incomplete", path)
         return dict()
 
@@ -610,11 +651,12 @@ Languages:
         """
         Persist per-repo contributor stats so future runs can skip unchanged repos.
         """
+        merged = {**self._cache.get("repos", {}), **self._new_cache_repos}
         CACHE_FILE.parent.mkdir(exist_ok=True)
         with open(CACHE_FILE, "w") as f:
-            json.dump({"repos": self._new_cache_repos}, f, indent=2)
+            json.dump({"repos": merged}, f, indent=2)
         if final:
-            log.info("Cache saved: %d repos", len(self._new_cache_repos))
+            log.info("Cache saved: %d repos (%d refreshed this run)", len(merged), len(self._new_cache_repos))
 
     @property
     async def views(self) -> int:
