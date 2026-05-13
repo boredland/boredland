@@ -455,11 +455,11 @@ Languages:
                 raw_results.get("data", {}).get("viewer", {}).get("repositories", {})
             )
 
-            repos = owned_repos.get("nodes", [])
-            if not self._ignore_forked_repos:
-                repos += contrib_repos.get("nodes", [])
+            owned_nodes = owned_repos.get("nodes", [])
+            contrib_nodes = contrib_repos.get("nodes", []) if not self._ignore_forked_repos else []
+            owned_names = {r.get("nameWithOwner") for r in owned_nodes if r}
 
-            for repo in repos:
+            for repo in owned_nodes + contrib_nodes:
                 if repo is None:
                     continue
                 name = repo.get("nameWithOwner")
@@ -469,8 +469,9 @@ Languages:
                     log.info("  Skipping fork: %s", name)
                     continue
                 self._repos.add(name)
-                self._stargazers += repo.get("stargazers").get("totalCount", 0)
-                self._forks += repo.get("forkCount", 0)
+                if name in owned_names:
+                    self._stargazers += repo.get("stargazers").get("totalCount", 0)
+                    self._forks += repo.get("forkCount", 0)
                 if pushed_at := repo.get("pushedAt"):
                     self._repo_pushed_at[name] = pushed_at
                 self._repo_archived[name] = bool(repo.get("isArchived"))
