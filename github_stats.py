@@ -343,21 +343,22 @@ Languages:
                     log.info("  Skipping fork: %s", name)
                     continue
                 self._repos.add(name)
-                if name in owned_names:
-                    self._stargazers += repo.get("stargazers").get("totalCount", 0)
-                    self._forks += repo.get("forkCount", 0)
                 log.info("  Found repo: %s", name)
+                if name not in owned_names:
+                    continue
+                self._stargazers += repo.get("stargazers").get("totalCount", 0)
+                self._forks += repo.get("forkCount", 0)
 
                 for lang in repo.get("languages", {}).get("edges", []):
-                    name = lang.get("node", {}).get("name", "Other")
+                    lang_name = lang.get("node", {}).get("name", "Other")
                     languages = await self.languages
-                    if name.lower() in exclude_langs_lower:
+                    if lang_name.lower() in exclude_langs_lower:
                         continue
-                    if name in languages:
-                        languages[name]["size"] += lang.get("size", 0)
-                        languages[name]["occurrences"] += 1
+                    if lang_name in languages:
+                        languages[lang_name]["size"] += lang.get("size", 0)
+                        languages[lang_name]["occurrences"] += 1
                     else:
-                        languages[name] = {
+                        languages[lang_name] = {
                             "size": lang.get("size", 0),
                             "occurrences": 1,
                             "color": lang.get("node", {}).get("color"),
