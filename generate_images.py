@@ -3,8 +3,6 @@
 import asyncio
 import os
 import re
-import signal
-import sys
 
 import aiohttp
 
@@ -41,9 +39,6 @@ async def generate_overview(s: Stats) -> None:
     output = re.sub("{{ stars }}", f"{await s.stargazers:,}", output)
     output = re.sub("{{ forks }}", f"{await s.forks:,}", output)
     output = re.sub("{{ contributions }}", f"{await s.total_contributions:,}", output)
-    changed = (await s.lines_changed)[0] + (await s.lines_changed)[1]
-    output = re.sub("{{ lines_changed }}", f"{changed:,}", output)
-    output = re.sub("{{ views }}", f"{await s.views:,}", output)
     output = re.sub("{{ repos }}", f"{len(await s.repos):,}", output)
 
     generate_output_folder()
@@ -131,17 +126,7 @@ async def main() -> None:
             exclude_langs=excluded_langs,
             ignore_forked_repos=ignore_forked_repos,
         )
-
-        def _sigterm_handler(signum, frame):
-            s.save_cache(final=True)
-            sys.exit(0)
-
-        signal.signal(signal.SIGTERM, _sigterm_handler)
-
-        try:
-            await asyncio.gather(generate_languages(s), generate_overview(s))
-        finally:
-            s.save_cache(final=True)
+        await asyncio.gather(generate_languages(s), generate_overview(s))
 
 
 if __name__ == "__main__":

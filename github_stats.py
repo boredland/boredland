@@ -1,11 +1,9 @@
 #!/usr/bin/python3
 
 import asyncio
-import json
 import logging
 import os
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Any, cast
+from typing import Dict, List, Optional, Set, Any, cast
 
 import aiohttp
 import requests
@@ -17,22 +15,6 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 log = logging.getLogger("github_stats")
-
-CACHE_FILE = Path("generated/cache.json")
-
-
-def _load_cache() -> Dict:
-    if CACHE_FILE.exists():
-        try:
-            with open(CACHE_FILE) as f:
-                data = json.load(f)
-            log.info("Cache loaded: %d repos cached", len(data.get("repos", {})))
-            return data
-        except Exception as e:
-            log.warning("Failed to load cache: %s", e)
-            return {}
-    log.info("No cache found, starting fresh")
-    return {}
 
 
 ###############################################################################
@@ -134,99 +116,6 @@ class Queries(object):
         log.error("GraphQL query failed after all attempts")
         return dict()
 
-    async def query_rest(self, path: str, params: Optional[Dict] = None) -> Dict:
-        """
-        Make a request to the REST API
-        :param path: API path to query
-        :param params: Query parameters to be passed to the API
-        :return: deserialized REST JSON output
-        """
-        if params is None:
-            params = dict()
-        if path.startswith("/"):
-            path = path[1:]
-        log.debug("REST GET %s", path)
-        for attempt in range(60):
-            headers = {
-                "Authorization": f"token {self.access_token}",
-            }
-            try:
-                async with self.semaphore:
-                    r_async = await self.session.get(
-                        f"https://api.github.com/{path}",
-                        headers=headers,
-                        params=tuple(params.items()),
-                    )
-                if r_async.status == 202:
-                    log.info("REST %s returned 202 (stats computing). Retrying... (attempt %d/60)", path, attempt + 1)
-                    await asyncio.sleep(2)
-                    continue
-                if r_async.status == 401:
-                    body = await r_async.text()
-                    raise RuntimeError(f"REST auth failed on {path} (HTTP 401): {body[:200]} — check that the GH_TOKEN secret is a valid, non-expired PAT")
-                if r_async.status in (429, 403):
-                    retry_after = r_async.headers.get("Retry-After")
-                    if retry_after is None and r_async.status == 403:
-                        body = await r_async.json()
-                        log.warning("REST %s: permission denied (HTTP 403): %s", path, body.get("message", ""))
-                        return dict()
-                    wait = int(retry_after) if retry_after else 60
-                    log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_async.status, wait, attempt + 1)
-                    await asyncio.sleep(wait)
-                    continue
-                if r_async.status >= 500:
-                    wait = min(30, 2 ** min(attempt, 5))
-                    log.warning("REST %s HTTP %d (transient). Waiting %ds... (attempt %d/60)", path, r_async.status, wait, attempt + 1)
-                    await asyncio.sleep(wait)
-                    continue
-                if r_async.status >= 400:
-                    body = await r_async.text()
-                    log.error("REST %s HTTP %d: %s", path, r_async.status, body[:200])
-                    return dict()
-                result = await r_async.json()
-                if result is not None:
-                    return result
-            except Exception as e:
-                log.error("aiohttp failed for REST GET %s: %s — falling back to requests (attempt %d/60)", path, e, attempt + 1)
-                try:
-                    async with self.semaphore:
-                        r_requests = requests.get(
-                            f"https://api.github.com/{path}",
-                            headers=headers,
-                            params=tuple(params.items()),
-                            timeout=30,
-                        )
-                    if r_requests.status_code == 202:
-                        log.info("REST %s returned 202 (stats computing). Retrying... (attempt %d/60)", path, attempt + 1)
-                        await asyncio.sleep(2)
-                        continue
-                    if r_requests.status_code in (429, 403):
-                        retry_after = r_requests.headers.get("Retry-After")
-                        if retry_after is None and r_requests.status_code == 403:
-                            body = r_requests.json()
-                            log.warning("REST %s: permission denied (HTTP 403): %s", path, body.get("message", ""))
-                            return dict()
-                        wait = int(retry_after) if retry_after else 60
-                        log.warning("REST rate limited on %s (HTTP %d). Waiting %ds... (attempt %d/60)", path, r_requests.status_code, wait, attempt + 1)
-                        await asyncio.sleep(wait)
-                        continue
-                    if r_requests.status_code >= 500:
-                        wait = min(30, 2 ** min(attempt, 5))
-                        log.warning("REST %s fallback HTTP %d (transient). Waiting %ds... (attempt %d/60)", path, r_requests.status_code, wait, attempt + 1)
-                        await asyncio.sleep(wait)
-                        continue
-                    if r_requests.status_code == 200:
-                        return r_requests.json()
-                    log.error("REST %s fallback HTTP %d: %s", path, r_requests.status_code, r_requests.text[:200])
-                    return dict()
-                except Exception as inner:
-                    wait = min(30, 2 ** min(attempt, 5))
-                    log.warning("REST %s fallback also failed: %s. Waiting %ds... (attempt %d/60)", path, inner, wait, attempt + 1)
-                    await asyncio.sleep(wait)
-                    continue
-        log.error("REST %s: too many retries, data will be incomplete", path)
-        return dict()
-
     @staticmethod
     def repos_overview(
         contrib_cursor: Optional[str] = None, owned_cursor: Optional[str] = None
@@ -253,13 +142,11 @@ class Queries(object):
       }}
       nodes {{
         nameWithOwner
-        isArchived
         isFork
         stargazers {{
           totalCount
         }}
         forkCount
-        pushedAt
         languages(first: 10, orderBy: {{field: SIZE, direction: DESC}}) {{
           edges {{
             size
@@ -287,13 +174,11 @@ class Queries(object):
       }}
       nodes {{
         nameWithOwner
-        isArchived
         isFork
         stargazers {{
           totalCount
         }}
         forkCount
-        pushedAt
         languages(first: 10, orderBy: {{field: SIZE, direction: DESC}}) {{
           edges {{
             size
@@ -385,13 +270,6 @@ class Stats(object):
         self._total_contributions: Optional[int] = None
         self._languages: Optional[Dict[str, Any]] = None
         self._repos: Optional[Set[str]] = None
-        self._lines_changed: Optional[Tuple[int, int]] = None
-        self._views: Optional[int] = None
-        self._cache: Dict = _load_cache()
-        self._repo_pushed_at: Dict[str, str] = {}
-        self._repo_archived: Dict[str, bool] = {}
-        self._repo_owned: Set[str] = set()
-        self._new_cache_repos: Dict[str, Any] = {}
 
     async def to_str(self) -> str:
         """
@@ -401,16 +279,11 @@ class Stats(object):
         formatted_languages = "\n  - ".join(
             [f"{k}: {v:0.4f}%" for k, v in languages.items()]
         )
-        lines_changed = await self.lines_changed
         return f"""Name: {await self.name}
 Stargazers: {await self.stargazers:,}
 Forks: {await self.forks:,}
 All-time contributions: {await self.total_contributions:,}
 Repositories with contributions: {len(await self.repos)}
-Lines of code added: {lines_changed[0]:,}
-Lines of code deleted: {lines_changed[1]:,}
-Lines of code changed: {lines_changed[0] + lines_changed[1]:,}
-Project page views: {await self.views:,}
 Languages:
   - {formatted_languages}"""
 
@@ -471,13 +344,9 @@ Languages:
                     continue
                 self._repos.add(name)
                 if name in owned_names:
-                    self._repo_owned.add(name)
                     self._stargazers += repo.get("stargazers").get("totalCount", 0)
                     self._forks += repo.get("forkCount", 0)
-                if pushed_at := repo.get("pushedAt"):
-                    self._repo_pushed_at[name] = pushed_at
-                self._repo_archived[name] = bool(repo.get("isArchived"))
-                log.info("  Found repo: %s (pushed: %s)", name, repo.get("pushedAt", "unknown"))
+                log.info("  Found repo: %s", name)
 
                 for lang in repo.get("languages", {}).get("edges", []):
                     name = lang.get("node", {}).get("name", "Other")
@@ -607,97 +476,6 @@ Languages:
                 "totalContributions", 0
             )
         return cast(int, self._total_contributions)
-
-    @property
-    async def lines_changed(self) -> Tuple[int, int]:
-        """
-        :return: count of total lines added, removed, or modified by the user
-        """
-        if self._lines_changed is not None:
-            return self._lines_changed
-        repos = await self.repos
-        cached_repos = self._cache.get("repos", {})
-        log.info("Fetching contributor stats for %d repos (parallel)", len(repos))
-
-        async def fetch_repo_lines(repo: str) -> Tuple[int, int]:
-            pushed_at = self._repo_pushed_at.get(repo)
-            archived = self._repo_archived.get(repo, False)
-            cached = cached_repos.get(repo, {})
-
-            if archived and cached:
-                log.info("  [archived]   %s — using cached value", repo)
-                self._new_cache_repos[repo] = {**cached, "archived": True}
-                return cached.get("additions", 0), cached.get("deletions", 0)
-
-            if pushed_at and cached.get("pushedAt") == pushed_at:
-                log.info("  [cache hit]  %s", repo)
-                self._new_cache_repos[repo] = cached
-                return cached.get("additions", 0), cached.get("deletions", 0)
-
-            log.info("  [fetching]   %s", repo)
-            repo_additions = 0
-            repo_deletions = 0
-            r = await self.queries.query_rest(f"/repos/{repo}/stats/contributors")
-
-            for author_obj in r:
-                if not isinstance(author_obj, dict) or not isinstance(
-                    author_obj.get("author", {}), dict
-                ):
-                    continue
-                author = author_obj.get("author", {}).get("login", "")
-                if author != self.username:
-                    continue
-                for week in author_obj.get("weeks", []):
-                    repo_additions += week.get("a", 0)
-                    repo_deletions += week.get("d", 0)
-
-            log.info("  [done]       %s (+%d/-%d lines)", repo, repo_additions, repo_deletions)
-            self._new_cache_repos[repo] = {
-                "pushedAt": pushed_at,
-                "additions": repo_additions,
-                "deletions": repo_deletions,
-                "archived": archived,
-            }
-            self.save_cache()
-            return repo_additions, repo_deletions
-
-        results = await asyncio.gather(*[fetch_repo_lines(r) for r in repos])
-        additions = sum(a for a, _ in results)
-        deletions = sum(d for _, d in results)
-        self._lines_changed = (additions, deletions)
-        return self._lines_changed
-
-    def save_cache(self, *, final: bool = False) -> None:
-        """
-        Persist per-repo contributor stats so future runs can skip unchanged repos.
-        """
-        merged = {**self._cache.get("repos", {}), **self._new_cache_repos}
-        CACHE_FILE.parent.mkdir(exist_ok=True)
-        with open(CACHE_FILE, "w") as f:
-            json.dump({"repos": merged}, f, indent=2)
-        if final:
-            log.info("Cache saved: %d repos (%d refreshed this run)", len(merged), len(self._new_cache_repos))
-
-    @property
-    async def views(self) -> int:
-        """
-        Note: only returns views for the last 14 days (as-per GitHub API)
-        :return: total number of page views the user's projects have received
-        """
-        if self._views is not None:
-            return self._views
-
-        async def fetch_repo_views(repo: str) -> int:
-            r = await self.queries.query_rest(f"/repos/{repo}/traffic/views")
-            return sum(view.get("count", 0) for view in r.get("views", []))
-
-        await self.repos
-        owned = self._repo_owned
-        log.info("Fetching traffic views for %d owned repos", len(owned))
-        results = await asyncio.gather(*[fetch_repo_views(r) for r in owned])
-        self._views = sum(results)
-        return self._views
-
 
 ###############################################################################
 # Main
