@@ -82,6 +82,12 @@ class Queries(object):
                     log.warning("GraphQL rate limited (HTTP %d). Waiting %ds... (attempt %d/10)", r_async.status, retry_after, attempt + 1)
                     await asyncio.sleep(retry_after)
                     continue
+                if r_async.status == 401:
+                    body = await r_async.text()
+                    raise RuntimeError(f"GraphQL auth failed (HTTP 401): {body[:200]} — check that the GH_TOKEN secret is a valid, non-expired PAT")
+                if r_async.status >= 400:
+                    body = await r_async.text()
+                    log.error("GraphQL HTTP %d: %s", r_async.status, body[:200])
                 result = await r_async.json()
                 if result is not None:
                     if "errors" in result:
@@ -136,6 +142,9 @@ class Queries(object):
                     log.info("REST %s returned 202 (stats computing). Retrying... (attempt %d/60)", path, attempt + 1)
                     await asyncio.sleep(2)
                     continue
+                if r_async.status == 401:
+                    body = await r_async.text()
+                    raise RuntimeError(f"REST auth failed on {path} (HTTP 401): {body[:200]} — check that the GH_TOKEN secret is a valid, non-expired PAT")
                 if r_async.status in (429, 403):
                     retry_after = r_async.headers.get("Retry-After")
                     if retry_after is None and r_async.status == 403:
