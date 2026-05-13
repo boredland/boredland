@@ -39,7 +39,7 @@ jobs:
         python3 generate_images.py
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        EXCLUDE_FORKED_REPOS: false
+        EXCLUDE_CONTRIBUTED_REPOS: false
         EXCLUDED: boredland/boredland
 
     - name: Commit to the repo
