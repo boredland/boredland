@@ -3,12 +3,14 @@
     "boredland/omeka-s-docker": {
       "pushedAt": "2019-05-22T11:48:08Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "boredland/boredland": {
-      "pushedAt": "2026-05-13T07:41:54Z",
+      "pushedAt": "2026-05-13T07:46:56Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": false
     },
     "manjaro-sway/bluetuith": {
       "pushedAt": "2026-05-11T15:53:23Z",
@@ -28,7 +30,8 @@
     "boredland/h3-pg": {
       "pushedAt": "2022-10-05T11:34:32Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "aave-dao/seatbelt-gov-v3": {
       "pushedAt": "2026-05-13T07:00:20Z",
@@ -108,7 +111,8 @@
     "boredland/action-coolify-deployment": {
       "pushedAt": "2025-02-11T11:06:54Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "manjaro-sway/desktop-settings": {
       "pushedAt": "2026-05-05T13:17:17Z",
@@ -153,7 +157,8 @@
     "boredland/generic-docker-grav": {
       "pushedAt": "2019-05-22T13:26:45Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "boredland/aur-slack-desktop": {
       "pushedAt": "2023-03-01T07:43:30Z",
@@ -168,7 +173,8 @@
     "boredland/gitstats": {
       "pushedAt": "2024-02-28T22:19:51Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "manjaro-sway/iso-profiles": {
       "pushedAt": "2025-12-07T20:18:51Z",
@@ -203,7 +209,8 @@
     "boredland/spreadchroot": {
       "pushedAt": "2015-08-24T10:40:19Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "playt-net/uptime": {
       "pushedAt": "2026-04-27T00:50:13Z",
@@ -243,7 +250,8 @@
     "boredland/MeteorKalender": {
       "pushedAt": "2018-07-07T21:05:03Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "boredland/repro-jsx-email": {
       "pushedAt": "2023-10-03T18:14:23Z",
@@ -263,7 +271,8 @@
     "boredland/lcov-bot": {
       "pushedAt": "2021-04-27T10:24:45Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "wevm/viem": {
       "pushedAt": "2026-05-12T19:52:37Z",
@@ -308,7 +317,8 @@
     "boredland/horde-docker": {
       "pushedAt": "2017-02-05T17:47:39Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "manjaro-sway/manjaro-meta": {
       "pushedAt": "2026-05-11T12:05:31Z",
@@ -333,7 +343,8 @@
     "boredland/sbdp": {
       "pushedAt": "2021-01-07T08:39:53Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "boredland/ts-queue": {
       "pushedAt": "2025-04-03T08:08:39Z",
@@ -348,12 +359,14 @@
     "boredland/nuxt-vercel-ts": {
       "pushedAt": "2020-10-21T00:19:54Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "boredland/punchcard-cli": {
       "pushedAt": "2021-02-22T05:07:21Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "manjaro-sway/pacman-log-orphans-hook": {
       "pushedAt": "2026-05-11T18:29:32Z",
@@ -363,12 +376,14 @@
     "boredland/action-purge-workflow-runs": {
       "pushedAt": "2023-01-13T22:10:35Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "boredland/mi-yarn-cache": {
       "pushedAt": "2022-10-19T11:49:41Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "manjaro-sway/sway-services": {
       "pushedAt": "2026-05-11T15:53:35Z",
@@ -423,7 +438,8 @@
     "boredland/deskbooking": {
       "pushedAt": "2022-09-28T15:44:45Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "felirious/my-spleeter-app": {
       "pushedAt": "2023-01-05T18:03:39Z",
@@ -433,7 +449,8 @@
     "boredland/optipdf": {
       "pushedAt": "2013-12-13T00:43:07Z",
       "additions": 0,
-      "deletions": 0
+      "deletions": 0,
+      "archived": true
     },
     "boredland/pdf-unlock": {
       "pushedAt": "2026-04-09T10:45:45Z",
