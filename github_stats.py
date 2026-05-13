@@ -390,7 +390,6 @@ class Stats(object):
         self._cache: Dict = _load_cache()
         self._repo_pushed_at: Dict[str, str] = {}
         self._repo_archived: Dict[str, bool] = {}
-        self._repo_fork: Dict[str, bool] = {}
         self._new_cache_repos: Dict[str, Any] = {}
 
     async def to_str(self) -> str:
@@ -466,13 +465,15 @@ Languages:
                 name = repo.get("nameWithOwner")
                 if name in self._repos or name in self._exclude_repos:
                     continue
+                if repo.get("isFork"):
+                    log.info("  Skipping fork: %s", name)
+                    continue
                 self._repos.add(name)
                 self._stargazers += repo.get("stargazers").get("totalCount", 0)
                 self._forks += repo.get("forkCount", 0)
                 if pushed_at := repo.get("pushedAt"):
                     self._repo_pushed_at[name] = pushed_at
                 self._repo_archived[name] = bool(repo.get("isArchived"))
-                self._repo_fork[name] = bool(repo.get("isFork"))
                 log.info("  Found repo: %s (pushed: %s)", name, repo.get("pushedAt", "unknown"))
 
                 for lang in repo.get("languages", {}).get("edges", []):
@@ -618,13 +619,7 @@ Languages:
         async def fetch_repo_lines(repo: str) -> Tuple[int, int]:
             pushed_at = self._repo_pushed_at.get(repo)
             archived = self._repo_archived.get(repo, False)
-            is_fork = self._repo_fork.get(repo, False)
             cached = cached_repos.get(repo, {})
-
-            if is_fork:
-                log.info("  [fork]       %s — skipping contributor stats", repo)
-                self._new_cache_repos[repo] = {**cached, "fork": True, "pushedAt": pushed_at}
-                return cached.get("additions", 0), cached.get("deletions", 0)
 
             if archived and cached:
                 log.info("  [archived]   %s — using cached value", repo)
@@ -690,8 +685,6 @@ Languages:
             return self._views
 
         async def fetch_repo_views(repo: str) -> int:
-            if self._repo_fork.get(repo, False):
-                return 0
             r = await self.queries.query_rest(f"/repos/{repo}/traffic/views")
             return sum(view.get("count", 0) for view in r.get("views", []))
 
