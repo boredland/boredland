@@ -392,13 +392,13 @@ Languages:
             )
             raw_results = raw_results if raw_results is not None else {}
 
-            self._name = raw_results.get("data", {}).get("viewer", {}).get("name", None)
-            if self._name is None:
-                self._name = (
-                    raw_results.get("data", {})
-                    .get("viewer", {})
-                    .get("login", "No Name")
-                )
+            viewer = raw_results.get("data", {}).get("viewer", {}) or {}
+            self._name = viewer.get("name") or viewer.get("login") or "No Name"
+            viewer_login = viewer.get("login")
+            if viewer_login and viewer_login != self.username:
+                log.info("Overriding username %r with token's viewer.login %r", self.username, viewer_login)
+                self.username = viewer_login
+                self.queries.username = viewer_login
 
             contrib_repos = (
                 raw_results.get("data", {})
