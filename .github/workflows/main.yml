@@ -40,6 +40,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         EXCLUDE_FORKED_REPOS: false
+        EXCLUDED: boredland/boredland
 
     - name: Commit to the repo
       run: |
