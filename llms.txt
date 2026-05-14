@@ -1,0 +1,102 @@
+# Jonas Strassel
+
+> Software engineer based in Frankfurt am Main, Germany. Builds small useful things — Linux distributions, web apps for local culture, and the occasional algorithm library. Works at BGD Labs.
+
+## Identity
+
+- Name: Jonas Strassel
+- Handle: boredland
+- Location: Frankfurt am Main, Germany
+- Role: Software Engineer
+- Employer: BGD Labs
+- Site: https://jonas-strassel.de/
+- GitHub: https://github.com/boredland
+- X / Twitter: https://twitter.com/boredland069
+- LinkedIn: https://www.linkedin.com/in/jonas-strassel-392194138/
+- Discord: boredland (boredland#3034)
+- Matrix: @boredland:matrix.org
+
+## Stack
+
+TypeScript, Bun, Cloudflare Workers, Hono, htmx, Tailwind CSS v4, Linux (Manjaro + Sway), Wayland.
+
+## Aggregate metrics
+
+- 833 stargazers across all owned repositories
+- 54 forks
+- 23,363 lifetime contributions
+- 89 repositories with contributions
+- Languages by share of code: TypeScript 68%, HTML 18%, JavaScript 5%, CSS 4%, Python 2%, Svelte 2%
+
+## Projects
+
+### manjaro-sway — Linux distribution
+Manjaro Linux with Wayland, Sway and a lot of love. 798 stars, 29 forks.
+- Live: https://manjaro-sway.download
+- Source: https://github.com/manjaro-sway/manjaro-sway
+
+### museumsufer — Frankfurt culture monorepo
+Cloudflare Workers monorepo serving four public web apps that aggregate cultural programming across Frankfurt and Rhein-Main. All hourly/daily-scraped, static-bundled, no D1 hot-path.
+- Source: https://github.com/boredland/museumsufer
+
+#### museumsufer.app
+Exhibitions and events from Frankfurt's 40+ museums on a fast, searchable page. 15+ deterministic scrapers (Tribe Events, schema.org, TYPO3 calendarize, WP REST + ACF, RSS, Kirby CMS), DeepL EN/FR translation, image-proxy, distance sorting via RMV, fuzzy search, PWA.
+- Live: https://museumsufer.app/
+
+#### frankfurt.ins.theater
+Hourly performance schedule across 24 Frankfurt theaters — Schauspiel, Oper, Mousonturm, English Theatre, Komödie, Tigerpalast, the Reservix-fronted small houses, plus long-tail venues. Editorial Programmheft styling.
+- Live: https://frankfurt.ins.theater
+
+#### frankfurt.konzert.haus
+Classical, jazz, sacred, world, experimental and chamber concerts across Frankfurt and the Rhein-Main region. No pop, no rock.
+- Live: https://frankfurt.konzert.haus
+
+#### landau.today
+Events for Landau in der Pfalz and the Südliche Weinstraße from six public sources, aggregated into a single SSR page with URL-bound category and date filters.
+- Live: https://landau.today
+
+### werk-review
+Modern, fast database and review platform for classical literature. Curated authors and works of world literature, automated Wikipedia/AI enrichment, Project Gutenberg-DE + LibriVox links.
+- Live: https://werk.review
+- Source: https://github.com/boredland/werk-review
+
+### leave-work
+Maximize your time off — vacation-day optimizer.
+- Live: https://leave.work
+- Source: https://github.com/boredland/leave-work
+
+### dumm-rum
+"Dumm rumstehen an Frankfurter Haltestellen seit 2026" — Frankfurt public-transport stop tool.
+- Live: https://dummrum.de
+- Source: https://github.com/boredland/dumm-rum
+
+### noise
+Browser-based audio noise reduction powered by DeepFilterNet3, running entirely client-side via WebAssembly.
+- Live: https://noise.jonas-strassel.de/
+- Source: https://github.com/boredland/noise
+
+### pdf-unlock
+Unlock password-protected PDFs in the browser using WebAssembly. No server upload.
+- Live: https://pdf-unlock.jonas-strassel.de/
+- Source: https://github.com/boredland/pdf-unlock
+
+### dowwntime
+Downtime checks, easy as pie.
+- Source: https://github.com/boredland/dowwntime
+
+### kernel-info
+Webservice parsing kernel.org for kernel info.
+- Live: https://kernel-info.manjaro-sway.download/
+- Source: https://github.com/boredland/kernel-info
+
+### aufteilung
+The Karmarkar–Karp differencing algorithm in TypeScript.
+- Source: https://github.com/boredland/aufteilung
+
+### saferound
+Sum-safe rounding for number arrays.
+- Source: https://github.com/boredland/saferound
+
+## Contact
+
+Form at https://jonas-strassel.de/ (button "SEND MESSAGE") or any of the social channels above.

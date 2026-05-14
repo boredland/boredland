@@ -1,6 +1,6 @@
 {
-    "name": "",
-    "short_name": "",
+    "name": "Jonas Strassel",
+    "short_name": "boredland",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
@@ -8,7 +8,7 @@
             "type": "image/png"
         }
     ],
-    "theme_color": "#ffffff",
-    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "background_color": "#000000",
     "display": "standalone"
 }

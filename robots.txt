@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://jonas-strassel.de/sitemap.xml

@@ -2,11 +2,53 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Jonas Strassel</title>
-    <meta name="description" content="$ git blame boredland" />
+    <title>Jonas Strassel — Software Engineer &amp; Maker, Frankfurt am Main</title>
+    <meta name="description" content="Jonas Strassel — software engineer based in Frankfurt am Main. Maker of manjaro-sway, museumsufer, and a few other small useful things." />
     <meta name="author" content="Jonas Strassel" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+
+    <link rel="canonical" href="https://jonas-strassel.de/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://jonas-strassel.de/" />
+    <meta property="og:title" content="Jonas Strassel — Software Engineer &amp; Maker" />
+    <meta property="og:description" content="Software engineer in Frankfurt am Main. Maker of manjaro-sway, museumsufer, frankfurt.ins.theater, and a few other small useful things." />
+    <meta property="og:image" content="https://wsrv.nl/?url=avatars.githubusercontent.com/u/4662748?s=512&output=png&maxage=1y" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="jonas-strassel.de" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@boredland069" />
+    <meta name="twitter:creator" content="@boredland069" />
+    <meta name="twitter:title" content="Jonas Strassel — Software Engineer &amp; Maker" />
+    <meta name="twitter:description" content="Software engineer in Frankfurt am Main. Maker of manjaro-sway, museumsufer, and a few other small useful things." />
+    <meta name="twitter:image" content="https://wsrv.nl/?url=avatars.githubusercontent.com/u/4662748?s=512&output=png&maxage=1y" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Jonas Strassel",
+      "givenName": "Jonas",
+      "familyName": "Strassel",
+      "alternateName": "boredland",
+      "url": "https://jonas-strassel.de/",
+      "image": "https://wsrv.nl/?url=avatars.githubusercontent.com/u/4662748?s=512&output=png&maxage=1y",
+      "jobTitle": "Software Engineer",
+      "worksFor": { "@type": "Organization", "name": "BGD Labs", "url": "https://bgdlabs.com/" },
+      "address": { "@type": "PostalAddress", "addressLocality": "Frankfurt am Main", "addressCountry": "DE" },
+      "knowsAbout": ["TypeScript", "Linux", "Cloudflare Workers", "Wayland", "Sway", "Bun", "Hono"],
+      "sameAs": [
+        "https://github.com/boredland",
+        "https://twitter.com/boredland069",
+        "https://www.linkedin.com/in/jonas-strasse%E2%80%8Al-392194138/",
+        "https://matrix.to/#/@boredland:matrix.org"
+      ]
+    }
+    </script>
 
     <link rel="stylesheet" href="css/fonts.css" />
     <link rel="stylesheet" href="css/normalize.min.css" />
@@ -426,6 +468,104 @@
         100% { color: var(--red); text-shadow: 0 0 8px var(--red); }
       }
 
+      .hsc-footnote {
+        text-align: center;
+        font-size: 7px;
+        letter-spacing: 2px;
+        color: var(--cyan);
+        opacity: 0.55;
+        margin: 14px 0 0;
+      }
+
+      .stage-bonus {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin: 0 0 12px;
+      }
+      .stage-stat {
+        text-align: center;
+        padding: 20px 12px 18px;
+        position: relative;
+        background: rgba(255,255,255,0.015);
+      }
+      .stage-stat::before,
+      .stage-stat::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-color: var(--cyan);
+        border-style: solid;
+      }
+      .stage-stat::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+      .stage-stat::after  { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+      .stage-stat .stage-icon {
+        display: block;
+        font-size: 20px;
+        line-height: 1;
+        color: var(--yellow);
+        margin-bottom: 10px;
+        text-shadow: 0 0 8px currentColor, 0 0 18px rgba(255,255,0,0.4);
+      }
+      .stage-stat .stage-num {
+        display: block;
+        font-family: 'Press Start 2P', monospace;
+        font-size: 18px;
+        letter-spacing: 2px;
+        color: var(--lime);
+        text-shadow: 0 0 6px currentColor, 0 0 14px rgba(0,255,0,0.3);
+        font-variant-numeric: tabular-nums;
+      }
+      .stage-stat .stage-label {
+        display: block;
+        font-size: 7px;
+        letter-spacing: 2px;
+        color: var(--cyan);
+        margin-top: 8px;
+      }
+
+      .loadout {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+      }
+      .loadout li {
+        display: grid;
+        grid-template-columns: 100px 1fr 50px;
+        gap: 12px;
+        align-items: center;
+        font-size: 8px;
+        letter-spacing: 1px;
+        padding: 4px 14px;
+      }
+      .loadout .lang-name { color: var(--fg); }
+      .loadout .lang-bar {
+        height: 10px;
+        background: rgba(255,255,255,0.06);
+        position: relative;
+        overflow: hidden;
+      }
+      .loadout .lang-bar .fill {
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        box-shadow: 0 0 6px currentColor;
+      }
+      .loadout .lang-pct {
+        text-align: right;
+        color: var(--cyan);
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 0 5px rgba(0,255,255,0.3);
+      }
+
+      @media (max-width: 520px) {
+        .stage-bonus { grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stage-stat .stage-num { font-size: 14px; }
+        .loadout li { grid-template-columns: 80px 1fr 40px; padding: 4px 8px; }
+      }
+
       .insert-coin {
         text-align: center;
         margin-top: 48px;
@@ -532,7 +672,7 @@
       <!-- HUD -->
       <header class="hud">
         <div class="hud-col"><span class="hud-label">1UP</span><span class="hud-val">00</span></div>
-        <div class="hud-col hi"><span class="hud-label">HIGH SCORE</span><span class="hud-val">0,797,000</span></div>
+        <div class="hud-col hi"><span class="hud-label">HIGH SCORE</span><span class="hud-val">0,800,900</span></div>
         <div class="hud-col"><span class="hud-label">2UP</span><span class="hud-val">--</span></div>
       </header>
 
@@ -560,7 +700,7 @@
       </h2>
       <ul class="characters">
         <li>
-          <a class="char-row" href="https://github.com/boredland" target="_blank" rel="noopener">
+          <a class="char-row" href="https://github.com/boredland" target="_blank" rel="me noopener">
             <svg class="ghost-sprite gh-red" viewBox="0 0 8 8" aria-hidden="true">
               <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
               <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
@@ -572,7 +712,7 @@
           </a>
         </li>
         <li>
-          <a class="char-row" href="https://twitter.com/boredland069" target="_blank" rel="noopener">
+          <a class="char-row" href="https://twitter.com/boredland069" target="_blank" rel="me noopener">
             <svg class="ghost-sprite gh-pink" viewBox="0 0 8 8" aria-hidden="true">
               <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
               <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
@@ -584,7 +724,7 @@
           </a>
         </li>
         <li>
-          <a class="char-row" href="https://www.linkedin.com/in/jonas-strasse%E2%80%8Al-392194138/" target="_blank" rel="noopener">
+          <a class="char-row" href="https://www.linkedin.com/in/jonas-strasse%E2%80%8Al-392194138/" target="_blank" rel="me noopener">
             <svg class="ghost-sprite gh-cyan" viewBox="0 0 8 8" aria-hidden="true">
               <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
               <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
@@ -596,7 +736,7 @@
           </a>
         </li>
         <li>
-          <a class="char-row" href="https://discordapp.com/users/boredland#3034" target="_blank" rel="noopener">
+          <a class="char-row" href="https://discordapp.com/users/boredland#3034" target="_blank" rel="me noopener">
             <svg class="ghost-sprite gh-orange" viewBox="0 0 8 8" aria-hidden="true">
               <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
               <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
@@ -608,7 +748,7 @@
           </a>
         </li>
         <li>
-          <a class="char-row" href="https://matrix.to/#/@boredland:matrix.org" target="_blank" rel="noopener">
+          <a class="char-row" href="https://matrix.to/#/@boredland:matrix.org" target="_blank" rel="me noopener">
             <svg class="ghost-sprite gh-purple" viewBox="0 0 8 8" aria-hidden="true">
               <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
               <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
@@ -635,121 +775,163 @@
         <li class="hsc-row hsc-1">
           <a href="https://manjaro-sway.download" target="_blank" rel="noopener">
             <span class="col-rank">1ST</span>
-            <span class="col-score">797,000</span>
+            <span class="col-score">800,900</span>
             <span class="col-name"><span class="live-star">&#9733;</span>MANJARO-SWAY</span>
             <span class="col-init">MJS</span>
           </a>
         </li>
         <li class="hsc-row">
-          <a href="https://museumsufer.app/" target="_blank" rel="noopener">
+          <a href="https://github.com/boredland/saferound" target="_blank" rel="noopener">
             <span class="col-rank">2ND</span>
-            <span class="col-score">42,000</span>
+            <span class="col-score">004,100</span>
+            <span class="col-name">SAFEROUND</span>
+            <span class="col-init">SFR</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://github.com/boredland/kernel-info" target="_blank" rel="noopener">
+            <span class="col-rank">3RD</span>
+            <span class="col-score">001,100</span>
+            <span class="col-name">KERNEL-INFO</span>
+            <span class="col-init">KRN</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://github.com/boredland/aufteilung" target="_blank" rel="noopener">
+            <span class="col-rank">4TH</span>
+            <span class="col-score">001,100</span>
+            <span class="col-name">AUFTEILUNG</span>
+            <span class="col-init">AUF</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://github.com/boredland/dowwntime" target="_blank" rel="noopener">
+            <span class="col-rank">5TH</span>
+            <span class="col-score">001,000</span>
+            <span class="col-name">DOWWNTIME</span>
+            <span class="col-init">DWN</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://dummrum.de" target="_blank" rel="noopener">
+            <span class="col-rank">6TH</span>
+            <span class="col-score">001,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>DUMM-RUM</span>
+            <span class="col-init">DUM</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://museumsufer.app/" target="_blank" rel="noopener">
+            <span class="col-rank">7TH</span>
+            <span class="col-score">000,000</span>
             <span class="col-name"><span class="live-star">&#9733;</span>MUSEUMSUFER</span>
             <span class="col-init">MUS</span>
           </a>
         </li>
         <li class="hsc-row">
+          <a href="https://leave.work" target="_blank" rel="noopener">
+            <span class="col-rank">8TH</span>
+            <span class="col-score">000,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>LEAVE-WORK</span>
+            <span class="col-init">LVW</span>
+          </a>
+        </li>
+        <li class="hsc-row">
           <a href="https://frankfurt.ins.theater" target="_blank" rel="noopener">
-            <span class="col-rank">3RD</span>
-            <span class="col-score">32,000</span>
+            <span class="col-rank">9TH</span>
+            <span class="col-score">000,000</span>
             <span class="col-name"><span class="live-star">&#9733;</span>FRANKFURT.INS.THEATER</span>
             <span class="col-init">FIT</span>
           </a>
         </li>
         <li class="hsc-row">
           <a href="https://frankfurt.konzert.haus" target="_blank" rel="noopener">
-            <span class="col-rank">4TH</span>
-            <span class="col-score">24,000</span>
+            <span class="col-rank">10TH</span>
+            <span class="col-score">000,000</span>
             <span class="col-name"><span class="live-star">&#9733;</span>FRANKFURT.KONZERT.HAUS</span>
             <span class="col-init">FKH</span>
           </a>
         </li>
         <li class="hsc-row">
           <a href="https://landau.today" target="_blank" rel="noopener">
-            <span class="col-rank">5TH</span>
-            <span class="col-score">18,000</span>
+            <span class="col-rank">11TH</span>
+            <span class="col-score">000,000</span>
             <span class="col-name"><span class="live-star">&#9733;</span>LANDAU.TODAY</span>
             <span class="col-init">LDU</span>
           </a>
         </li>
         <li class="hsc-row">
           <a href="https://werk.review" target="_blank" rel="noopener">
-            <span class="col-rank">6TH</span>
-            <span class="col-score">15,000</span>
+            <span class="col-rank">12TH</span>
+            <span class="col-score">000,000</span>
             <span class="col-name"><span class="live-star">&#9733;</span>WERK-REVIEW</span>
             <span class="col-init">WRV</span>
           </a>
         </li>
         <li class="hsc-row">
-          <a href="https://leave.work" target="_blank" rel="noopener">
-            <span class="col-rank">7TH</span>
-            <span class="col-score">13,000</span>
-            <span class="col-name"><span class="live-star">&#9733;</span>LEAVE-WORK</span>
-            <span class="col-init">LVW</span>
-          </a>
-        </li>
-        <li class="hsc-row">
-          <a href="https://dummrum.de" target="_blank" rel="noopener">
-            <span class="col-rank">8TH</span>
-            <span class="col-score">11,000</span>
-            <span class="col-name"><span class="live-star">&#9733;</span>DUMM-RUM</span>
-            <span class="col-init">DUM</span>
-          </a>
-        </li>
-        <li class="hsc-row">
           <a href="https://noise.jonas-strassel.de/" target="_blank" rel="noopener">
-            <span class="col-rank">9TH</span>
-            <span class="col-score">9,000</span>
+            <span class="col-rank">13TH</span>
+            <span class="col-score">000,000</span>
             <span class="col-name"><span class="live-star">&#9733;</span>NOISE</span>
             <span class="col-init">NSE</span>
           </a>
         </li>
         <li class="hsc-row">
           <a href="https://pdf-unlock.jonas-strassel.de/" target="_blank" rel="noopener">
-            <span class="col-rank">10TH</span>
-            <span class="col-score">7,000</span>
+            <span class="col-rank">14TH</span>
+            <span class="col-score">000,000</span>
             <span class="col-name"><span class="live-star">&#9733;</span>PDF-UNLOCK</span>
             <span class="col-init">PDU</span>
           </a>
         </li>
-        <li class="hsc-row">
-          <a href="https://github.com/boredland/dowwntime" target="_blank" rel="noopener">
-            <span class="col-rank">11TH</span>
-            <span class="col-score">5,000</span>
-            <span class="col-name">DOWWNTIME</span>
-            <span class="col-init">DWN</span>
-          </a>
-        </li>
-        <li class="hsc-row">
-          <a href="https://github.com/boredland/kernel-info" target="_blank" rel="noopener">
-            <span class="col-rank">12TH</span>
-            <span class="col-score">4,000</span>
-            <span class="col-name">KERNEL-INFO</span>
-            <span class="col-init">KRN</span>
-          </a>
-        </li>
-        <li class="hsc-row">
-          <a href="https://github.com/boredland/saferound" target="_blank" rel="noopener">
-            <span class="col-rank">13TH</span>
-            <span class="col-score">4,000</span>
-            <span class="col-name">SAFEROUND</span>
-            <span class="col-init">SFR</span>
-          </a>
-        </li>
-        <li class="hsc-row">
-          <a href="https://github.com/boredland/aufteilung" target="_blank" rel="noopener">
-            <span class="col-rank">14TH</span>
-            <span class="col-score">3,000</span>
-            <span class="col-name">AUFTEILUNG</span>
-            <span class="col-init">AUF</span>
-          </a>
-        </li>
       </ol>
+      <p class="hsc-footnote">SCORE = (STARS &times; 1000) + (FORKS &times; 100)</p>
+
+      <!-- STAGE BONUS — aggregate metrics -->
+      <h2 class="section-title">
+        <span class="dash">&mdash;&mdash;</span>STAGE BONUS<span class="dash">&mdash;&mdash;</span>
+      </h2>
+      <div class="stage-bonus">
+        <div class="stage-stat">
+          <span class="stage-icon">&#9733;</span>
+          <span class="stage-num">833</span>
+          <span class="stage-label">STARGAZERS</span>
+        </div>
+        <div class="stage-stat">
+          <span class="stage-icon">&#9874;</span>
+          <span class="stage-num">54</span>
+          <span class="stage-label">FORKS</span>
+        </div>
+        <div class="stage-stat">
+          <span class="stage-icon">&#9998;</span>
+          <span class="stage-num">23,363</span>
+          <span class="stage-label">COMMITS</span>
+        </div>
+        <div class="stage-stat">
+          <span class="stage-icon">&#9881;</span>
+          <span class="stage-num">89</span>
+          <span class="stage-label">REPOS</span>
+        </div>
+      </div>
+
+      <!-- PILOT LOADOUT — language proportions -->
+      <h2 class="section-title">
+        <span class="dash">&mdash;&mdash;</span>PILOT LOADOUT<span class="dash">&mdash;&mdash;</span>
+      </h2>
+      <ul class="loadout">
+        <li><span class="lang-name">TypeScript</span><span class="lang-bar"><span class="fill" style="width:68.43%;background:#3178c6;color:#3178c6"></span></span><span class="lang-pct">68%</span></li>
+        <li><span class="lang-name">HTML</span><span class="lang-bar"><span class="fill" style="width:18.11%;background:#e34c26;color:#e34c26"></span></span><span class="lang-pct">18%</span></li>
+        <li><span class="lang-name">JavaScript</span><span class="lang-bar"><span class="fill" style="width:4.87%;background:#f1e05a;color:#f1e05a"></span></span><span class="lang-pct">5%</span></li>
+        <li><span class="lang-name">CSS</span><span class="lang-bar"><span class="fill" style="width:3.55%;background:#563d7c;color:#a070ff"></span></span><span class="lang-pct">4%</span></li>
+        <li><span class="lang-name">Python</span><span class="lang-bar"><span class="fill" style="width:2.39%;background:#3572A5;color:#5497d8"></span></span><span class="lang-pct">2%</span></li>
+        <li><span class="lang-name">Svelte</span><span class="lang-bar"><span class="fill" style="width:2.14%;background:#ff3e00;color:#ff3e00"></span></span><span class="lang-pct">2%</span></li>
+        <li><span class="lang-name">Shell</span><span class="lang-bar"><span class="fill" style="width:0.38%;background:#89e051;color:#89e051"></span></span><span class="lang-pct">&lt;1%</span></li>
+      </ul>
 
       <!-- Insert coin / contact -->
       <footer class="insert-coin">
         <p class="coin-line">INSERT COIN</p>
-        <p class="coin-sub">CREDITS &nbsp;&infin;</p>
+        <p class="coin-sub">CREDITS &nbsp;23,363</p>
         <button type="button" class="send-btn" onclick="document.getElementById('formbutton-button').click()">&#9654; SEND MESSAGE &#9664;</button>
         <p class="legal">
           <span class="copy">&copy; 2026 BORED-LAND CORP.</span> &nbsp;&bull;&nbsp; MFG IN FFM, DEU<br>
