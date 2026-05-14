@@ -6,308 +6,509 @@
     <meta name="description" content="$ git blame boredland" />
     <meta name="author" content="Jonas Strassel" />
 
-    <!-- Mobile Specific Metas
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- FONT
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <link rel="preload" as="font" />
     <link rel="stylesheet" href="css/fonts.css" />
-
-    <!-- CSS
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
     <link rel="stylesheet" href="css/normalize.min.css" />
-
-    <!-- Themes:
-         Auto:   css/skeleton-auto.css
-         Light:  css/skeleton-light.css
-         Dark:   css/skeleton-dark.css
-  -->
-    <link rel="stylesheet" href="css/skeleton-auto.css" />
-
-    <link rel="stylesheet" href="css/brands.css" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet" />
+
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png" />
+    <link rel="manifest" href="assets/site.webmanifest" />
+    <link rel="mask-icon" href="assets/safari-pinned-tab.svg" color="#5bbad5" />
 
     <style>
-      body {
-        background-color: #0a0a0f;
-        color: #f0c040;
-        font-family: "Press Start 2P", monospace;
-        font-size: 18px;
-        line-height: 33px;
+      :root {
+        --bg:       #000000;
+        --fg:       #ffffff;
+        --red:      #ff0000;
+        --orange:   #ff8800;
+        --yellow:   #ffff00;
+        --amber:    #f0c040;
+        --lime:     #00ff00;
+        --green:    #44dd44;
+        --cyan:     #00ffff;
+        --blue:     #2121de;
+        --magenta:  #ff00ff;
+        --pink:     #ffb8ff;
+        --purple:   #a020f0;
       }
 
-      /* Full-page CRT scanlines */
-      @keyframes scanroll {
-        from { background-position: 0 0; }
-        to   { background-position: 0 12px; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+
+      html {
+        background: var(--bg);
       }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Press Start 2P', monospace;
+        min-height: 100vh;
+        overflow-x: hidden;
+        line-height: 1.2;
+      }
+
       body::after {
         content: "";
         position: fixed;
         inset: 0;
         background: repeating-linear-gradient(
           to bottom,
-          rgba(0,0,0,0.18) 0px,
-          rgba(0,0,0,0.18) 1px,
+          rgba(0,0,0,0.32) 0px,
+          rgba(0,0,0,0.32) 1px,
           transparent 1px,
           transparent 3px
         );
-        background-size: 100% 12px;
-        animation: scanroll 0.4s linear infinite;
         pointer-events: none;
         z-index: 9999;
       }
 
-      h1 {
-        font-family: "Press Start 2P", monospace;
-        font-size: 30px;
-        line-height: 54px;
-        letter-spacing: 2px;
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%),
+          radial-gradient(ellipse 80% 60% at 50% 30%, rgba(20,40,80,0.08), transparent 70%);
+        pointer-events: none;
+        z-index: 9997;
       }
 
-      @media (min-width: 550px) {
-        h1 {
-          font-size: 42px;
-          line-height: 72px;
-        }
-      }
-
-      p {
-        font-size: 15px;
-        line-height: 30px;
-        color: #d0a030;
-      }
-
-      .gradient-name {
-        background: linear-gradient(90deg, #f0c040, #d060b0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        text-shadow: none;
-        filter: drop-shadow(0 0 8px rgba(240, 192, 64, 0.5));
-      }
-
-      /* Pixel glow on avatar */
-      img[alt="Picture of Jonas Strassel"] {
-        border-radius: 50%;
-        box-shadow: 0 0 0 3px #f0c040, 0 0 20px rgba(240, 192, 64, 0.4);
-        image-rendering: pixelated;
-      }
-
-      /* Retro button overrides */
-      .button {
-        font-family: "Press Start 2P", monospace;
-        font-size: 12px;
-        border-radius: 0 !important;
-        border: 2px solid #f0c040 !important;
-        color: #f0c040 !important;
-        background: transparent !important;
-        letter-spacing: 1px;
-        transition: background 0.1s, color 0.1s, box-shadow 0.1s;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
-        width: 280px !important;
-        height: 48px !important;
-        line-height: normal !important;
-      }
-
-      .social-links {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-      }
-      /* Hide the default floating formbutton trigger visually, keep it clickable */
-      #formbutton-button { opacity: 0 !important; pointer-events: none !important; position: fixed !important; }
-      .button:hover {
-        background: #f0c040 !important;
-        color: #0a0a0f !important;
-        box-shadow: 0 0 12px rgba(240, 192, 64, 0.7);
-      }
-      .git-blame-btn {
-        font-family: monospace !important;
-        font-size: 13px !important;
-        letter-spacing: 0 !important;
-        background: #0d0d16 !important;
-        text-shadow: 0 0 6px rgba(240,192,64,0.4);
-        text-decoration: none;
-      }
-      .git-blame-btn .blame-host {
-        color: #d060b0;
-        margin-left: 0.4em;
-        transition: color 0.1s;
-      }
-      .git-blame-btn:hover {
-        text-shadow: none;
-      }
-      .git-blame-btn:hover .blame-host {
-        color: #0a0a0f;
-      }
-
-      a {
-        color: #f0c040;
-      }
-      a:hover {
-        color: #d060b0;
-      }
-
-      .projects-section {
-        margin-top: 80px;
-        text-align: center;
-        position: relative;
-      }
-
-      .projects-section h2 {
-        font-family: "Press Start 2P", monospace;
-        font-size: 14px;
-        color: #f0c040;
-        margin-bottom: 30px;
-        text-shadow: 0 0 8px rgba(240, 192, 64, 0.4);
-        letter-spacing: 3px;
-        position: relative;
-        display: inline-block;
-      }
-      .projects-section h2::after {
-        content: "_";
-        animation: blink-cursor 0.8s step-end infinite;
-      }
-      @keyframes blink-cursor {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0; }
-      }
-
-      .projects-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 14px;
-        max-width: 640px;
+      .screen {
+        max-width: 660px;
         margin: 0 auto;
-      }
-      @media (min-width: 550px) {
-        .projects-grid {
-          grid-template-columns: 1fr 1fr;
-        }
-      }
-
-      .project-card {
+        padding: 28px 22px 80px;
         position: relative;
-        padding: 20px 18px 16px;
-        text-align: left;
-        text-decoration: none;
-        display: block;
-        background: rgba(10, 10, 15, 0.85);
-        border: 1px solid rgba(240, 192, 64, 0.25);
-        transition: border-color 0.15s, box-shadow 0.15s;
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      .project-card.visible {
-        animation: card-flicker-in 0.4s ease-out forwards;
-      }
-      @keyframes card-flicker-in {
-        0%   { opacity: 0; transform: translateY(8px); }
-        20%  { opacity: 0.6; transform: translateY(2px); }
-        35%  { opacity: 0.2; transform: translateY(2px); }
-        50%  { opacity: 0.8; transform: translateY(0); }
-        70%  { opacity: 0.5; }
-        100% { opacity: 1; transform: translateY(0); }
+        z-index: 10;
       }
 
-      .project-card::before,
-      .project-card::after {
+      .hud {
+        display: grid;
+        grid-template-columns: 1fr 1.6fr 1fr;
+        gap: 12px;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+      .hud-col .hud-label {
+        display: block;
+        font-size: 9px;
+        letter-spacing: 1px;
+        color: var(--fg);
+        margin-bottom: 8px;
+        text-shadow: 0 0 5px rgba(255,255,255,0.4);
+      }
+      .hud-col .hud-val {
+        display: block;
+        font-size: 13px;
+        letter-spacing: 1px;
+        color: var(--fg);
+        font-variant-numeric: tabular-nums;
+      }
+      .hud-col.hi .hud-label { color: var(--red); text-shadow: 0 0 6px var(--red), 0 0 14px rgba(255,0,0,0.4); }
+      .hud-col.hi .hud-val {
+        color: var(--yellow);
+        animation: hi-blink 0.5s steps(2) infinite;
+        text-shadow:
+          0 0 4px var(--yellow),
+          0 0 10px rgba(255,255,0,0.7),
+          0 0 22px rgba(255,255,0,0.3);
+      }
+      @keyframes hi-blink {
+        0%, 49% { color: var(--yellow); }
+        50%, 100% { color: var(--fg); }
+      }
+
+      .marquee {
+        position: relative;
+        text-align: center;
+        padding: 22px 4px 18px;
+        margin-bottom: 28px;
+      }
+      .marquee::before, .marquee::after {
         content: "";
         position: absolute;
-        width: 8px;
-        height: 8px;
-        border-color: #f0c040;
-        border-style: solid;
-        transition: border-color 0.15s;
+        left: -12px; right: -12px;
+        height: 10px;
+        background:
+          radial-gradient(circle at 7px center, var(--yellow) 0 3px, transparent 3.5px) repeat-x;
+        background-size: 20px 10px;
+        filter:
+          drop-shadow(0 0 4px var(--yellow))
+          drop-shadow(0 0 9px rgba(255,255,0,0.6));
+        animation: bulb-chase 1s linear infinite;
       }
-      .project-card::before {
-        top: -1px;
-        left: -1px;
-        border-width: 2px 0 0 2px;
-      }
-      .project-card::after {
-        bottom: -1px;
-        right: -1px;
-        border-width: 0 2px 2px 0;
-      }
-
-      .project-card:hover {
-        border-color: #f0c040;
-        box-shadow:
-          0 0 12px rgba(240, 192, 64, 0.3),
-          inset 0 0 30px rgba(240, 192, 64, 0.04);
-      }
-      .project-card:hover::before,
-      .project-card:hover::after {
-        border-color: #d060b0;
+      .marquee::before { top: 0; }
+      .marquee::after  { bottom: 0; animation-direction: reverse; }
+      @keyframes bulb-chase {
+        from { background-position: 0 center; }
+        to   { background-position: 20px center; }
       }
 
-      .project-card .project-name {
-        font-family: "Press Start 2P", monospace;
-        font-size: 11px;
-        color: #f0c040;
-        margin-bottom: 8px;
-        text-shadow: 0 0 6px rgba(240, 192, 64, 0.3);
+      .title {
+        font-size: 36px;
+        letter-spacing: 3px;
+        line-height: 1;
+        margin: 6px 0 14px;
+        font-family: 'Press Start 2P', monospace;
       }
-      .project-card:hover .project-name {
-        text-shadow: 0 0 10px rgba(240, 192, 64, 0.6);
+      .title span {
+        display: inline-block;
+        text-shadow:
+          0 0 4px currentColor,
+          0 0 12px currentColor,
+          0 0 22px rgba(255,255,255,0.18);
       }
+      .title .c1  { color: var(--red); }
+      .title .c2  { color: var(--orange); }
+      .title .c3  { color: var(--yellow); }
+      .title .c4  { color: var(--lime); }
+      .title .c5  { color: var(--cyan); }
+      .title .c6  { color: var(--magenta); }
+      .title .c7  { color: var(--red); }
+      .title .c8  { color: var(--orange); }
+      .title .c9  { color: var(--yellow); }
+      .title .c10 { color: var(--lime); }
+      .title .c11 { color: var(--cyan); }
+      .title .c12 { color: var(--magenta); }
+      .title .c13 { color: var(--pink); }
+      .title .sp { width: 0.55em; }
 
-      .project-card .project-desc {
-        font-family: "Press Start 2P", monospace;
+      .credit {
         font-size: 8px;
-        line-height: 18px;
-        color: #8a7a50;
+        letter-spacing: 2px;
+        color: var(--cyan);
+        text-shadow: 0 0 5px rgba(0,255,255,0.5);
+      }
+
+      .splash {
+        text-align: center;
+        margin: 12px 0 40px;
+      }
+      .player-label {
+        font-size: 9px;
+        letter-spacing: 3px;
+        color: var(--cyan);
+        margin: 0 0 14px;
+        text-shadow: 0 0 5px rgba(0,255,255,0.5);
+      }
+      .sprite-frame {
+        display: inline-block;
+        padding: 0;
+        position: relative;
+        margin-bottom: 18px;
+        background: var(--bg);
+        box-shadow:
+          0 0 0 3px var(--yellow),
+          0 0 0 6px var(--bg),
+          0 0 0 9px var(--yellow),
+          0 0 24px rgba(255,255,0,0.35);
+      }
+      .player-sprite {
+        display: block;
+        width: 96px;
+        height: 96px;
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
+      .sprite-frame::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,0.05) 0,
+          rgba(255,255,255,0.05) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        pointer-events: none;
+      }
+
+      .cta {
+        font-size: 12px;
+        letter-spacing: 2px;
+        color: var(--yellow);
+        text-shadow:
+          0 0 5px rgba(255,255,0,0.6),
+          0 0 14px rgba(255,255,0,0.3);
+        min-height: 14px;
+        animation: cta-blink 0.5s steps(2) infinite;
         margin: 0;
       }
-      .project-card:hover .project-desc {
-        color: #d0a030;
+      @keyframes cta-blink { 50% { opacity: 0; } }
+      .cta-sub {
+        font-size: 9px;
+        letter-spacing: 1px;
+        color: var(--fg);
+        opacity: 0.7;
+        margin: 14px 0 0;
       }
 
-      .project-card .project-lang {
-        font-family: "Press Start 2P", monospace;
+      .section-title {
+        text-align: center;
+        font-size: 11px;
+        letter-spacing: 4px;
+        color: var(--fg);
+        margin: 40px 0 22px;
+        text-shadow: 0 0 6px rgba(255,255,255,0.4);
+      }
+      .section-title .dash { color: var(--cyan); margin: 0 12px; }
+      .section-title .star {
+        color: var(--yellow);
+        margin: 0 10px;
+        text-shadow: 0 0 6px var(--yellow), 0 0 14px rgba(255,255,0,0.5);
+      }
+
+      .characters {
+        list-style: none;
+        margin: 0 0 20px;
+        padding: 0;
+        display: grid;
+        gap: 4px;
+      }
+      .char-row {
+        display: grid;
+        grid-template-columns: 38px 110px 1fr 78px;
+        align-items: center;
+        gap: 14px;
+        padding: 10px 14px;
+        text-decoration: none;
+        color: var(--fg);
+        position: relative;
+      }
+      .char-row:nth-child(odd)  { background: rgba(255,255,255,0.025); }
+      .char-row::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 4px;
+        background: transparent;
+        transition: background 0.08s;
+      }
+      .char-row:hover { background: rgba(255,255,0,0.08); }
+      .char-row:hover::before { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+
+      .ghost-sprite {
+        display: block;
+        width: 28px;
+        height: 28px;
+        image-rendering: pixelated;
+        animation: ghost-bob 1.4s ease-in-out infinite;
+        filter: drop-shadow(0 0 4px currentColor) drop-shadow(0 0 10px currentColor);
+      }
+      .char-row:nth-child(2) .ghost-sprite { animation-delay: 0.1s; }
+      .char-row:nth-child(3) .ghost-sprite { animation-delay: 0.2s; }
+      .char-row:nth-child(4) .ghost-sprite { animation-delay: 0.3s; }
+      .char-row:nth-child(5) .ghost-sprite { animation-delay: 0.4s; }
+      @keyframes ghost-bob {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-2px); }
+      }
+      .gh-red    { color: var(--red); }
+      .gh-pink   { color: var(--pink); }
+      .gh-cyan   { color: var(--cyan); }
+      .gh-orange { color: var(--orange); }
+      .gh-purple { color: var(--purple); }
+
+      .char-name {
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--fg);
+        transition: color 0.08s;
+      }
+      .char-row:hover .char-name { color: var(--yellow); }
+      .char-handle {
+        font-family: 'VT323', monospace;
+        font-size: 18px;
+        letter-spacing: 0.5px;
+        color: var(--fg);
+        opacity: 0.85;
+      }
+      .char-pts {
+        font-size: 9px;
+        letter-spacing: 1px;
+        color: var(--cyan);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 0 5px rgba(0,255,255,0.4);
+      }
+
+      .hsc-header {
+        display: grid;
+        grid-template-columns: 50px 110px 1fr 48px;
+        gap: 12px;
         font-size: 8px;
-        color: #0a0a0f;
-        background: #d060b0;
-        padding: 2px 6px;
-        margin-top: 10px;
-        margin-right: 4px;
-        display: inline-block;
+        letter-spacing: 2px;
+        color: var(--cyan);
+        padding: 6px 14px 8px;
+        margin-bottom: 6px;
+        border-bottom: 1px dashed rgba(0,255,255,0.4);
+        text-shadow: 0 0 5px rgba(0,255,255,0.4);
+      }
+      .hsc-header .col-score { text-align: right; }
+      .hsc-header .col-init { text-align: center; }
+
+      .hsc {
+        list-style: none;
+        margin: 0 0 24px;
+        padding: 0;
+        display: grid;
+        gap: 2px;
+      }
+      .hsc-row {
+        position: relative;
+      }
+      .hsc-row > a {
+        display: grid;
+        grid-template-columns: 50px 110px 1fr 48px;
+        gap: 12px;
+        padding: 8px 14px;
+        text-decoration: none;
+        color: var(--fg);
+        font-size: 10px;
+        letter-spacing: 1px;
+        align-items: center;
+        position: relative;
+      }
+      .hsc-row:nth-child(odd) > a { background: rgba(255,255,255,0.025); }
+      .hsc-row > a::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 4px;
+        background: transparent;
+        transition: background 0.08s;
+      }
+      .hsc-row > a:hover { background: rgba(255,255,0,0.10); }
+      .hsc-row > a:hover::before { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+      .hsc-row > a:hover .col-name { color: var(--yellow); }
+
+      .col-rank { color: var(--cyan); font-variant-numeric: tabular-nums; }
+      .col-score {
+        color: var(--yellow);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 0 5px rgba(255,255,0,0.4);
+      }
+      .col-name { color: var(--fg); transition: color 0.08s; }
+      .col-name .live-star { color: var(--orange); margin-right: 6px; text-shadow: 0 0 6px var(--orange); }
+      .col-init { color: var(--cyan); text-align: center; font-size: 8px; letter-spacing: 1px; }
+
+      .hsc-row.hsc-1 > a {
+        background:
+          linear-gradient(90deg,
+            rgba(255,0,0,0.10),
+            rgba(255,136,0,0.10),
+            rgba(255,255,0,0.10),
+            rgba(0,255,0,0.10),
+            rgba(0,255,255,0.10),
+            rgba(255,0,255,0.10));
+        background-size: 200% 100%;
+        animation: rainbow-shift 5s linear infinite;
+      }
+      .hsc-row.hsc-1 .col-name {
+        animation: rainbow-text 4s steps(6) infinite;
+      }
+      @keyframes rainbow-shift { to { background-position: 200% 0; } }
+      @keyframes rainbow-text {
+        0%   { color: var(--red); text-shadow: 0 0 8px var(--red); }
+        16%  { color: var(--orange); text-shadow: 0 0 8px var(--orange); }
+        33%  { color: var(--yellow); text-shadow: 0 0 8px var(--yellow); }
+        50%  { color: var(--lime); text-shadow: 0 0 8px var(--lime); }
+        66%  { color: var(--cyan); text-shadow: 0 0 8px var(--cyan); }
+        83%  { color: var(--magenta); text-shadow: 0 0 8px var(--magenta); }
+        100% { color: var(--red); text-shadow: 0 0 8px var(--red); }
+      }
+
+      .insert-coin {
+        text-align: center;
+        margin-top: 48px;
+        padding: 24px 0 0;
+      }
+      .coin-line {
+        font-size: 13px;
+        letter-spacing: 4px;
+        color: var(--yellow);
+        margin: 0 0 6px;
+        animation: blink-slow 1s steps(2) infinite;
+        text-shadow:
+          0 0 6px rgba(255,255,0,0.7),
+          0 0 16px rgba(255,255,0,0.35);
+      }
+      @keyframes blink-slow { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.25; } }
+      .coin-sub {
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: var(--fg);
+        opacity: 0.7;
+        margin: 0 0 26px;
+      }
+      .send-btn {
+        font-family: 'Press Start 2P', monospace;
+        font-size: 11px;
+        letter-spacing: 3px;
+        padding: 12px 22px;
+        background: var(--bg);
+        color: var(--lime);
+        border: none;
+        cursor: pointer;
+        position: relative;
+        text-shadow: 0 0 6px var(--lime), 0 0 14px rgba(0,255,0,0.4);
+        box-shadow:
+          inset 0 0 0 2px var(--lime),
+          0 0 0 3px var(--bg),
+          0 0 0 5px var(--lime),
+          0 0 20px rgba(0,255,0,0.4);
+        transition: background 0.08s, color 0.08s, text-shadow 0.08s, box-shadow 0.08s;
+      }
+      .send-btn:hover {
+        background: var(--lime);
+        color: var(--bg);
         text-shadow: none;
+        box-shadow:
+          inset 0 0 0 2px var(--lime),
+          0 0 0 3px var(--bg),
+          0 0 0 5px var(--lime),
+          0 0 32px rgba(0,255,0,0.8);
+      }
+
+      .legal {
+        margin-top: 36px;
+        font-size: 7px;
+        letter-spacing: 1.5px;
+        color: var(--fg);
+        opacity: 0.45;
+        line-height: 1.9;
+        text-align: center;
+      }
+      .legal .copy { color: var(--cyan); opacity: 0.75; }
+
+      #formbutton-button {
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: fixed !important;
+      }
+
+      @media (max-width: 520px) {
+        .screen { padding: 18px 14px 60px; }
+        .title { font-size: 22px; letter-spacing: 2px; }
+        .hud { gap: 6px; }
+        .hud-col .hud-val { font-size: 11px; }
+        .char-row { grid-template-columns: 32px 1fr 60px; gap: 10px; padding: 10px; }
+        .char-row .char-handle { display: none; }
+        .hsc-header, .hsc-row > a { grid-template-columns: 40px 80px 1fr 36px; gap: 8px; padding: 7px 10px; font-size: 9px; }
+        .hsc-header { font-size: 7px; }
+        .col-init { font-size: 7px; }
+        .coin-line { font-size: 11px; letter-spacing: 2px; }
       }
     </style>
 
-    <!-- Favicon
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="assets/apple-touch-icon.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="assets/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="assets/favicon-16x16.png"
-    />
-    <link rel="manifest" href="assets/site.webmanifest" />
-    <link rel="mask-icon" href="assets/safari-pinned-tab.svg" color="#5bbad5" />
     <script src="https://formspree.io/js/formbutton-v1.min.js" defer></script>
     <script>
       window.formbutton = window.formbutton || function() {
@@ -327,160 +528,251 @@
   </head>
 
   <body>
-    <!-- Primary Page Layout
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
-    <div class="container">
-      <div class="row">
-        <div class="column" style="margin-top: 10%; text-align: center">
-          <!-- Your Image Here -->
-          <img
-            src="https://wsrv.nl/?url=avatars.githubusercontent.com/u/4662748?s=242&output=webp&maxage=1y"
-            alt="Picture of Jonas Strassel"
-            style="border-radius: 50%"
-            width="161px"
-            height="161px"
-          />
+    <main class="screen">
+      <!-- HUD -->
+      <header class="hud">
+        <div class="hud-col"><span class="hud-label">1UP</span><span class="hud-val">00</span></div>
+        <div class="hud-col hi"><span class="hud-label">HIGH SCORE</span><span class="hud-val">0,797,000</span></div>
+        <div class="hud-col"><span class="hud-label">2UP</span><span class="hud-val">--</span></div>
+      </header>
 
-          <!-- Title -->
-          <h1 class="gradient-name">Jonas Strassel</h1>
+      <!-- Cabinet marquee + title -->
+      <section class="marquee">
+        <h1 class="title" aria-label="Jonas Strassel">
+          <span class="c1">J</span><span class="c2">O</span><span class="c3">N</span><span class="c4">A</span><span class="c5">S</span><span class="sp">&nbsp;</span><span class="c6">S</span><span class="c7">T</span><span class="c8">R</span><span class="c9">A</span><span class="c10">S</span><span class="c11">S</span><span class="c12">E</span><span class="c13">L</span>
+        </h1>
+        <p class="credit">&copy; 1980 BORED-LAND CORP. &nbsp;&bull;&nbsp; MFG IN FFM, DEU</p>
+      </section>
 
-          <!-- Short Bio + GitHub -->
-          <div class="social-links">
-          <a class="button git-blame-btn" href="https://github.com/boredland" target="_blank" rel="noopener">$ git blame <span class="blame-host">github.com/boredland</span></a>
-
-          <!-- X -->
-          <a class="button button-x" href="https://twitter.com/boredland069" target="_blank" rel="noopener" role="button">
-            <img class="icon" src="assets/icons/x.svg" alt="">Follow on X
-          </a>
-
-          <!-- LinkedIn -->
-          <a
-            class="button button-linked"
-            href="https://www.linkedin.com/in/jonas-strasse%E2%80%8Al-392194138/"
-            target="_blank"
-            rel="noopener"
-            ><img
-              class="icon"
-              src="assets/icons/linkedin.svg"
-              alt="LinkedIn Logo"
-            />LinkedIn</a
-          >
-
-          <!-- Discord -->
-          <a
-            class="button button-discord"
-            href="https://discordapp.com/users/boredland#3034"
-            target="_blank"
-            rel="noopener"
-            ><img
-              class="icon"
-              src="assets/icons/discord.svg"
-              alt="Discord Logo"
-            />Discord</a
-          >
-
-          <!-- Matrix -->
-          <a class="button button-matrix" href="https://matrix.to/#/@boredland:matrix.org" target="_blank" rel="noopener">
-            <img class="icon" src="assets/icons/matrix.svg" alt="Matrix Logo">Matrix</a>
-
-          <!-- Contact -->
-          <button class="button" style="cursor:pointer;" onclick="document.getElementById('formbutton-button').click()"><img class="icon" src="assets/icons/email.svg" alt="">Contact</button>
-          </div>
-
-          <div class="projects-section">
-            <h2>SELECT GAME</h2>
-            <div class="projects-grid">
-              <a class="project-card" href="https://manjaro-sway.download" target="_blank" rel="noopener">
-                <div class="project-name">manjaro-sway</div>
-                <p class="project-desc">Manjaro Linux with Wayland, Sway and a lot of love</p>
-                <span class="project-lang">Shell</span>
-              </a>
-              <a class="project-card" href="https://museumsufer.app/" target="_blank" rel="noopener">
-                <div class="project-name">museumsufer</div>
-                <p class="project-desc">Exhibitions and events from Frankfurt's 40+ museums on a fast, searchable page</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://frankfurt.ins.theater" target="_blank" rel="noopener">
-                <div class="project-name">frankfurt.ins.theater</div>
-                <p class="project-desc">Hourly performance schedule across 24 Frankfurt theaters</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://frankfurt.konzert.haus" target="_blank" rel="noopener">
-                <div class="project-name">frankfurt.konzert.haus</div>
-                <p class="project-desc">Classical, jazz, sacred and chamber concerts across Frankfurt and Rhein-Main</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://landau.today" target="_blank" rel="noopener">
-                <div class="project-name">landau.today</div>
-                <p class="project-desc">Events for Landau in der Pfalz and the Südliche Weinstraße in one place</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://werk.review" target="_blank" rel="noopener">
-                <div class="project-name">werk-review</div>
-                <p class="project-desc">Curated database and review platform for classical literature</p>
-                <span class="project-lang">HTML</span>
-              </a>
-              <a class="project-card" href="https://leave.work" target="_blank" rel="noopener">
-                <div class="project-name">leave-work</div>
-                <p class="project-desc">Maximize your time off</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://dummrum.de" target="_blank" rel="noopener">
-                <div class="project-name">dumm-rum</div>
-                <p class="project-desc">Dumm rumstehen an Frankfurter Haltestellen seit 2026</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://noise.jonas-strassel.de/" target="_blank" rel="noopener">
-                <div class="project-name">noise</div>
-                <p class="project-desc">Browser-based audio noise reduction powered by DeepFilterNet3 via WebAssembly</p>
-                <span class="project-lang">JavaScript</span>
-              </a>
-              <a class="project-card" href="https://github.com/boredland/dowwntime" target="_blank" rel="noopener">
-                <div class="project-name">dowwntime</div>
-                <p class="project-desc">downtime-checks, easy as pie</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://pdf-unlock.jonas-strassel.de/" target="_blank" rel="noopener">
-                <div class="project-name">pdf-unlock</div>
-                <p class="project-desc">Unlock password-protected PDFs in your browser using WebAssembly</p>
-                <span class="project-lang">HTML</span>
-              </a>
-              <a class="project-card" href="https://github.com/boredland/kernel-info" target="_blank" rel="noopener">
-                <div class="project-name">kernel-info</div>
-                <p class="project-desc">webservice parsing kernel.org for kernel info</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://github.com/boredland/aufteilung" target="_blank" rel="noopener">
-                <div class="project-name">aufteilung</div>
-                <p class="project-desc">The Karmarkar-Karp differencing algorithm in Typescript</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-              <a class="project-card" href="https://github.com/boredland/saferound" target="_blank" rel="noopener">
-                <div class="project-name">saferound</div>
-                <p class="project-desc">sum-safe rounding for number arrays</p>
-                <span class="project-lang">TypeScript</span>
-              </a>
-            </div>
-          </div>
+      <!-- Player splash -->
+      <section class="splash">
+        <p class="player-label">&mdash;&mdash; PLAYER 1 &mdash;&mdash;</p>
+        <div class="sprite-frame">
+          <img class="player-sprite" src="https://wsrv.nl/?url=avatars.githubusercontent.com/u/4662748?s=64&output=png&n=1&maxage=1y" alt="Picture of Jonas Strassel" width="96" height="96" />
         </div>
+        <p class="cta" id="cta">PUSH START BUTTON</p>
+        <p class="cta-sub">1 PLAYER &nbsp; 1 COIN &nbsp; 1 PLAY</p>
+      </section>
+
+      <!-- CHARACTERS / NICKNAMES -->
+      <h2 class="section-title">
+        <span class="dash">&mdash;&mdash;</span>CHARACTER<span class="dash">/</span>NICKNAME<span class="dash">&mdash;&mdash;</span>
+      </h2>
+      <ul class="characters">
+        <li>
+          <a class="char-row" href="https://github.com/boredland" target="_blank" rel="noopener">
+            <svg class="ghost-sprite gh-red" viewBox="0 0 8 8" aria-hidden="true">
+              <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
+              <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
+              <rect x="2" y="3" width="1" height="1" fill="#2121de"/><rect x="5" y="3" width="1" height="1" fill="#2121de"/>
+            </svg>
+            <span class="char-name">GITHUB</span>
+            <span class="char-handle">@boredland</span>
+            <span class="char-pts">200 PTS</span>
+          </a>
+        </li>
+        <li>
+          <a class="char-row" href="https://twitter.com/boredland069" target="_blank" rel="noopener">
+            <svg class="ghost-sprite gh-pink" viewBox="0 0 8 8" aria-hidden="true">
+              <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
+              <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
+              <rect x="2" y="3" width="1" height="1" fill="#2121de"/><rect x="5" y="3" width="1" height="1" fill="#2121de"/>
+            </svg>
+            <span class="char-name">X</span>
+            <span class="char-handle">@boredland069</span>
+            <span class="char-pts">400 PTS</span>
+          </a>
+        </li>
+        <li>
+          <a class="char-row" href="https://www.linkedin.com/in/jonas-strasse%E2%80%8Al-392194138/" target="_blank" rel="noopener">
+            <svg class="ghost-sprite gh-cyan" viewBox="0 0 8 8" aria-hidden="true">
+              <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
+              <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
+              <rect x="2" y="3" width="1" height="1" fill="#2121de"/><rect x="5" y="3" width="1" height="1" fill="#2121de"/>
+            </svg>
+            <span class="char-name">LINKEDIN</span>
+            <span class="char-handle">jonas strassel</span>
+            <span class="char-pts">800 PTS</span>
+          </a>
+        </li>
+        <li>
+          <a class="char-row" href="https://discordapp.com/users/boredland#3034" target="_blank" rel="noopener">
+            <svg class="ghost-sprite gh-orange" viewBox="0 0 8 8" aria-hidden="true">
+              <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
+              <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
+              <rect x="2" y="3" width="1" height="1" fill="#2121de"/><rect x="5" y="3" width="1" height="1" fill="#2121de"/>
+            </svg>
+            <span class="char-name">DISCORD</span>
+            <span class="char-handle">boredland#3034</span>
+            <span class="char-pts">1600 PTS</span>
+          </a>
+        </li>
+        <li>
+          <a class="char-row" href="https://matrix.to/#/@boredland:matrix.org" target="_blank" rel="noopener">
+            <svg class="ghost-sprite gh-purple" viewBox="0 0 8 8" aria-hidden="true">
+              <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
+              <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
+              <rect x="2" y="3" width="1" height="1" fill="#2121de"/><rect x="5" y="3" width="1" height="1" fill="#2121de"/>
+            </svg>
+            <span class="char-name">MATRIX</span>
+            <span class="char-handle">@boredland:matrix.org</span>
+            <span class="char-pts">3200 PTS</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- HIGH SCORES -->
+      <h2 class="section-title">
+        <span class="star">&#9733;</span>HIGH SCORES<span class="star">&#9733;</span>
+      </h2>
+      <div class="hsc-header">
+        <span class="col-rank">RANK</span>
+        <span class="col-score">SCORE</span>
+        <span class="col-name">NAME</span>
+        <span class="col-init">INIT</span>
       </div>
-    </div>
+      <ol class="hsc">
+        <li class="hsc-row hsc-1">
+          <a href="https://manjaro-sway.download" target="_blank" rel="noopener">
+            <span class="col-rank">1ST</span>
+            <span class="col-score">797,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>MANJARO-SWAY</span>
+            <span class="col-init">MJS</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://museumsufer.app/" target="_blank" rel="noopener">
+            <span class="col-rank">2ND</span>
+            <span class="col-score">42,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>MUSEUMSUFER</span>
+            <span class="col-init">MUS</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://frankfurt.ins.theater" target="_blank" rel="noopener">
+            <span class="col-rank">3RD</span>
+            <span class="col-score">32,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>FRANKFURT.INS.THEATER</span>
+            <span class="col-init">FIT</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://frankfurt.konzert.haus" target="_blank" rel="noopener">
+            <span class="col-rank">4TH</span>
+            <span class="col-score">24,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>FRANKFURT.KONZERT.HAUS</span>
+            <span class="col-init">FKH</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://landau.today" target="_blank" rel="noopener">
+            <span class="col-rank">5TH</span>
+            <span class="col-score">18,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>LANDAU.TODAY</span>
+            <span class="col-init">LDU</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://werk.review" target="_blank" rel="noopener">
+            <span class="col-rank">6TH</span>
+            <span class="col-score">15,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>WERK-REVIEW</span>
+            <span class="col-init">WRV</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://leave.work" target="_blank" rel="noopener">
+            <span class="col-rank">7TH</span>
+            <span class="col-score">13,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>LEAVE-WORK</span>
+            <span class="col-init">LVW</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://dummrum.de" target="_blank" rel="noopener">
+            <span class="col-rank">8TH</span>
+            <span class="col-score">11,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>DUMM-RUM</span>
+            <span class="col-init">DUM</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://noise.jonas-strassel.de/" target="_blank" rel="noopener">
+            <span class="col-rank">9TH</span>
+            <span class="col-score">9,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>NOISE</span>
+            <span class="col-init">NSE</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://pdf-unlock.jonas-strassel.de/" target="_blank" rel="noopener">
+            <span class="col-rank">10TH</span>
+            <span class="col-score">7,000</span>
+            <span class="col-name"><span class="live-star">&#9733;</span>PDF-UNLOCK</span>
+            <span class="col-init">PDU</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://github.com/boredland/dowwntime" target="_blank" rel="noopener">
+            <span class="col-rank">11TH</span>
+            <span class="col-score">5,000</span>
+            <span class="col-name">DOWWNTIME</span>
+            <span class="col-init">DWN</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://github.com/boredland/kernel-info" target="_blank" rel="noopener">
+            <span class="col-rank">12TH</span>
+            <span class="col-score">4,000</span>
+            <span class="col-name">KERNEL-INFO</span>
+            <span class="col-init">KRN</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://github.com/boredland/saferound" target="_blank" rel="noopener">
+            <span class="col-rank">13TH</span>
+            <span class="col-score">4,000</span>
+            <span class="col-name">SAFEROUND</span>
+            <span class="col-init">SFR</span>
+          </a>
+        </li>
+        <li class="hsc-row">
+          <a href="https://github.com/boredland/aufteilung" target="_blank" rel="noopener">
+            <span class="col-rank">14TH</span>
+            <span class="col-score">3,000</span>
+            <span class="col-name">AUFTEILUNG</span>
+            <span class="col-init">AUF</span>
+          </a>
+        </li>
+      </ol>
+
+      <!-- Insert coin / contact -->
+      <footer class="insert-coin">
+        <p class="coin-line">INSERT COIN</p>
+        <p class="coin-sub">CREDITS &nbsp;&infin;</p>
+        <button type="button" class="send-btn" onclick="document.getElementById('formbutton-button').click()">&#9654; SEND MESSAGE &#9664;</button>
+        <p class="legal">
+          <span class="copy">&copy; 2026 BORED-LAND CORP.</span> &nbsp;&bull;&nbsp; MFG IN FFM, DEU<br>
+          LICENSED MATERIAL &middot; ALL RIGHTS RESERVED
+        </p>
+      </footer>
+    </main>
+
+    <!-- CTA text cycling: classic Pac-Man "PUSH START BUTTON" / "1 PLAYER ONLY" alternation -->
     <script>
     (function () {
-      const cards = document.querySelectorAll('.project-card');
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const card = entry.target;
-            const idx = Array.from(cards).indexOf(card);
-            setTimeout(() => card.classList.add('visible'), idx * 80);
-            observer.unobserve(card);
-          }
-        });
-      }, { threshold: 0.15 });
-      cards.forEach(c => observer.observe(c));
+      const el = document.getElementById('cta');
+      if (!el) return;
+      const lines = ['PUSH START BUTTON', '1 PLAYER ONLY'];
+      let i = 0;
+      setInterval(() => {
+        i = (i + 1) % lines.length;
+        el.textContent = lines[i];
+      }, 2400);
     })();
     </script>
+
+    <!-- Pac-Man perimeter attract animation (preserved verbatim) -->
     <script>
     (function () {
       const canvas = document.createElement('canvas');
@@ -1023,7 +1315,5 @@
       animate();
     })();
     </script>
-    <!-- End Document
-  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
   </body>
 </html>
