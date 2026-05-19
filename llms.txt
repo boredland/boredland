@@ -51,6 +51,14 @@ Hourly performance schedule across 24 Frankfurt theaters — Schauspiel, Oper, M
 Classical, jazz, sacred, world, experimental and chamber concerts across Frankfurt and the Rhein-Main region. No pop, no rock.
 - Live: https://frankfurt.konzert.haus
 
+#### frankfurt.lichtspiel.haus
+Daily cinema programme across the Frankfurt arthouse + repertory cinemas — DFF, Astor, Cinéma/Eldorado/Harmonie, Pupille, Mal seh'n, Murnau, Caligari, Filmforum Höchst, Kino des DFF, Kinopolis. TMDb-enriched posters and synopses, Rotten Tomatoes + IMDb ratings, film-strip date slider in a Wiener-Werkstätte / Saul-Bass register.
+- Live: https://frankfurt.lichtspiel.haus
+
+#### frankfurt.lehr.salon
+Daily index of public lectures, readings, and discussions in Frankfurt — Polytechnische Gesellschaft, Haus am Dom, Jüdische Gemeinde, Literaturhaus, Bürgeruniversität, Sigmund-Freud-Institut, Denkbar and more. Cross-imports of Vortrag-class events from the museums + theaters apps. Annotated-quarto identity (foxed paper, iron-gall ink, rubric red, pilcrow anchors).
+- Live: https://frankfurt.lehr.salon
+
 #### landau.today
 Events for Landau in der Pfalz and the Südliche Weinstraße from six public sources, aggregated into a single SSR page with URL-bound category and date filters.
 - Live: https://landau.today
