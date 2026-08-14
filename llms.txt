@@ -18,65 +18,107 @@
 
 ## Stack
 
-TypeScript, Bun, Cloudflare Workers, Hono, htmx, Tailwind CSS v4, Linux (Manjaro + Sway), Wayland.
+TypeScript, Bun, Cloudflare Workers, Hono, HonoX, htmx, Tailwind CSS v4, Rust, Solidity, Linux (Manjaro + Sway), Wayland.
 
 ## Aggregate metrics
 
-- 833 stargazers across all owned repositories
-- 54 forks
-- 23,363 lifetime contributions
-- 89 repositories with contributions
-- Languages by share of code: TypeScript 68%, HTML 18%, JavaScript 5%, CSS 4%, Python 2%, Svelte 2%
+- 1,141 stargazers across all owned repositories
+- 129 forks
+- 30,386 lifetime contributions
+- 156 repositories with contributions
+- Languages by share of code: TypeScript 71%, JavaScript 9%, Rust 6%, HTML 4%, Python 3%, Jupyter Notebook 2%, Solidity 2%, CSS <1%
 
 ## Projects
 
 ### manjaro-sway — Linux distribution
-Manjaro Linux with Wayland, Sway and a lot of love. 798 stars, 29 forks.
+Manjaro Linux with Wayland, Sway and a lot of love. 806 stars, 30 forks.
 - Live: https://manjaro-sway.download
 - Source: https://github.com/manjaro-sway/manjaro-sway
 
-### museumsufer — Frankfurt culture monorepo
-Cloudflare Workers monorepo serving four public web apps that aggregate cultural programming across Frankfurt and Rhein-Main. All hourly/daily-scraped, static-bundled, no D1 hot-path.
+### museumsufer — multi-city culture monorepo
+Cloudflare Workers monorepo serving six public web apps that aggregate cultural programming. Five are multi-city verticals (museums, theater, concerts, lectures, cinema) served at `<city>.<apex>` subdomains, with the bare apex 302-redirecting to the nearest city by Cloudflare edge geolocation; landau.today is single-city. Cities currently modeled: Frankfurt, Hamburg, Darmstadt, Heidelberg. One hourly GitHub Action runs the hub scrape, per-app derive steps regenerate typed bundles committed to git, and Cloudflare redeploys on push — no DB on the read path (D1 only for request-time user writes). A city-expansion backlog maps every German city over 150k for staged rollout.
 - Source: https://github.com/boredland/museumsufer
 
-#### museumsufer.app
-Exhibitions and events from Frankfurt's 40+ museums on a fast, searchable page. 15+ deterministic scrapers (Tribe Events, schema.org, TYPO3 calendarize, WP REST + ACF, RSS, Kirby CMS), DeepL EN/FR translation, image-proxy, distance sorting via RMV, fuzzy search, PWA.
-- Live: https://museumsufer.app/
+#### ins.museum
+Daily exhibitions and events for ~40 Frankfurt Museumsufer museums, extending to Hamburg (Kunsthalle, Museum für Kunst und Gewerbe, Deichtorhallen, SHMH houses). 15+ deterministic scrapers (Tribe Events, TYPO3 calendarize, schema.org microdata, WP REST + ACF, RSS, Kirby CMS), DeepL EN/FR translation, image proxy, distance sorting via RMV, fuzzy search, PWA.
+- Live: https://ins.museum (also https://museumsufer.app — SEO-primary alias pinned to Frankfurt)
 
-#### frankfurt.ins.theater
-Hourly performance schedule across 24 Frankfurt theaters — Schauspiel, Oper, Mousonturm, English Theatre, Komödie, Tigerpalast, the Reservix-fronted small houses, plus long-tail venues. Editorial Programmheft styling.
-- Live: https://frankfurt.ins.theater
+#### ins.theater
+Hourly performance schedule across Frankfurt theaters — Schauspiel, Oper, Mousonturm, English Theatre, Komödie, Tigerpalast, the Reservix-fronted small houses, plus long-tail venues — alongside Hamburg houses. Editorial Programmheft styling.
+- Live: https://ins.theater
 
-#### frankfurt.konzert.haus
+#### konzert.haus
 Classical, jazz, sacred, world, experimental and chamber concerts across Frankfurt and the Rhein-Main region. No pop, no rock.
-- Live: https://frankfurt.konzert.haus
+- Live: https://konzert.haus
 
-#### frankfurt.lichtspiel.haus
-Daily cinema programme across the Frankfurt arthouse + repertory cinemas — DFF, Astor, Cinéma/Eldorado/Harmonie, Pupille, Mal seh'n, Murnau, Caligari, Filmforum Höchst, Kino des DFF, Kinopolis. TMDb-enriched posters and synopses, Rotten Tomatoes + IMDb ratings, film-strip date slider in a Wiener-Werkstätte / Saul-Bass register.
-- Live: https://frankfurt.lichtspiel.haus
+#### lichtspiel.haus
+Daily cinema programme across arthouse + repertory cinemas — DFF, Astor, Cinéma/Eldorado/Harmonie, Pupille, Mal seh'n, Murnau, Caligari, Filmforum Höchst, Kinopolis. TMDb-enriched posters and synopses, Rotten Tomatoes + IMDb ratings, film-strip date slider in a Wiener-Werkstätte / Saul-Bass register.
+- Live: https://lichtspiel.haus
 
-#### frankfurt.lehr.salon
-Daily index of public lectures, readings, and discussions in Frankfurt — Polytechnische Gesellschaft, Haus am Dom, Jüdische Gemeinde, Literaturhaus, Bürgeruniversität, Sigmund-Freud-Institut, Denkbar and more. Cross-imports of Vortrag-class events from the museums + theaters apps. Annotated-quarto identity (foxed paper, iron-gall ink, rubric red, pilcrow anchors).
-- Live: https://frankfurt.lehr.salon
+#### lehr.salon
+Daily index of public lectures, readings, and discussions — Polytechnische Gesellschaft, Haus am Dom, Jüdische Gemeinde, Literaturhaus, Bürgeruniversität, Sigmund-Freud-Institut, Denkbar and more. Cross-imports Vortrag-class events from the museums + theaters apps. Annotated-quarto identity.
+- Live: https://lehr.salon
 
 #### landau.today
 Events for Landau in der Pfalz and the Südliche Weinstraße from six public sources, aggregated into a single SSR page with URL-bound category and date filters.
 - Live: https://landau.today
+
+### trinkhallen-app
+Cloudflare Workers + Hono app for finding German Trinkhallen, Spätis and Wasserhäuschen.
+- Live: https://trinkhallen.app
+- Source: https://github.com/boredland/trinkhallen-app
+
+### trinkhallen-data
+Open dataset of German Trinkhallen, Wasserhäuschen and Spätis. CC BY-NC 4.0. Consumed by trinkhallen.app.
+- Source: https://github.com/boredland/trinkhallen-data
 
 ### werk-review
 Modern, fast database and review platform for classical literature. Curated authors and works of world literature, automated Wikipedia/AI enrichment, Project Gutenberg-DE + LibriVox links.
 - Live: https://werk.review
 - Source: https://github.com/boredland/werk-review
 
-### leave-work
-Maximize your time off — vacation-day optimizer.
-- Live: https://leave.work
-- Source: https://github.com/boredland/leave-work
+### wanderbar.fyi
+GPX weather warnings as a PWA: one track, a pace-profile ETA, and a wake-up push that notifies only when conditions worsen or clear. All weather logic client-side.
+- Live: https://wanderbar.fyi
+- Source: https://github.com/boredland/wanderbar.fyi
+
+### oritdidnthappen
+Pics or it didn't happen — BYOS event photo sharing. Guests upload straight into the host's own Google Drive or Dropbox. No login, no servers storing your photos. HonoX + Cloudflare Workers + D1.
+- Live: https://oritdidnthappen.pics
+- Source: https://github.com/boredland/oritdidnthappen
+
+### schnitzeljaeger.in
+Baue teilbare, standortbasierte Schnitzeljagden mit Karte, Rätseln und geheimem Lösungswort. HonoX auf Cloudflare Workers.
+- Live: https://schnitzeljaeger.in
+- Source: https://github.com/boredland/schnitzeljaeger.in
+
+### erbsenzaehler
+🌿 Erntetagebuch für Gemeinschaftsgärten — track harvests, log waterings, share with your garden crew.
+- Live: https://erbsenzaehler.in
+- Source: https://github.com/boredland/erbsenzaehler
+
+### baustellenschild
+Baustellen in Frankfurt am Main — construction-site map for the city.
+- Live: https://bauschild.jonas-strassel.de
+- Source: https://github.com/boredland/baustellenschild
 
 ### dumm-rum
 "Dumm rumstehen an Frankfurter Haltestellen seit 2026" — Frankfurt public-transport stop tool.
 - Live: https://dummrum.de
 - Source: https://github.com/boredland/dumm-rum
+
+### leave-work
+Maximize your time off — vacation-day optimizer.
+- Live: https://leave.work
+- Source: https://github.com/boredland/leave-work
+
+### opera-directory
+Open, browsable database of opera productions — past and future — across the world's opera houses. Click a work and see every staging of it; click a house and see its seasons; click a singer and follow them from production to production. Modeled on operabook.org and Operabase.
+- Source: https://github.com/boredland/opera-directory
+
+### frankfurt-history
+Interactive map for exploring historical locations across Frankfurt am Main, built on data from the Frankfurt History app by dotcombinat / Historisches Museum Frankfurt.
+- Source: https://github.com/boredland/frankfurt-history
 
 ### noise
 Browser-based audio noise reduction powered by DeepFilterNet3, running entirely client-side via WebAssembly.
@@ -96,6 +138,14 @@ Downtime checks, easy as pie.
 Webservice parsing kernel.org for kernel info.
 - Live: https://kernel-info.manjaro-sway.download/
 - Source: https://github.com/boredland/kernel-info
+
+### fetch-proxy
+Lightweight HTTP proxy for fetching pages from servers that block datacenter IPs or have broken TLS, with optional FlareSolverr (Cloudflare challenge) and stealth-render fallbacks.
+- Source: https://github.com/boredland/fetch-proxy
+
+### action-commit-store
+GitHub Action using commit comments as storage.
+- Source: https://github.com/boredland/action-commit-store
 
 ### aufteilung
 The Karmarkar–Karp differencing algorithm in TypeScript.
