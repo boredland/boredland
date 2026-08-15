@@ -68,10 +68,6 @@ Cloudflare Workers + Hono app for finding German Trinkhallen, Spätis and Wasser
 - Live: https://trinkhallen.app
 - Source: https://github.com/boredland/trinkhallen-app
 
-### trinkhallen-data
-Open dataset of German Trinkhallen, Wasserhäuschen and Spätis. CC BY-NC 4.0. Consumed by trinkhallen.app.
-- Source: https://github.com/boredland/trinkhallen-data
-
 ### werk-review
 Modern, fast database and review platform for classical literature. Curated authors and works of world literature, automated Wikipedia/AI enrichment, Project Gutenberg-DE + LibriVox links.
 - Live: https://werk.review
@@ -111,14 +107,6 @@ Baustellen in Frankfurt am Main — construction-site map for the city.
 Maximize your time off — vacation-day optimizer.
 - Live: https://leave.work
 - Source: https://github.com/boredland/leave-work
-
-### opera-directory
-Open, browsable database of opera productions — past and future — across the world's opera houses. Click a work and see every staging of it; click a house and see its seasons; click a singer and follow them from production to production. Modeled on operabook.org and Operabase.
-- Source: https://github.com/boredland/opera-directory
-
-### frankfurt-history
-Interactive map for exploring historical locations across Frankfurt am Main, built on data from the Frankfurt History app by dotcombinat / Historisches Museum Frankfurt.
-- Source: https://github.com/boredland/frankfurt-history
 
 ### noise
 Browser-based audio noise reduction powered by DeepFilterNet3, running entirely client-side via WebAssembly.
