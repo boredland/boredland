@@ -1,6 +1,6 @@
 # Jonas Strassel
 
-> Software engineer based in Frankfurt am Main, Germany. Builds small useful things — Linux distributions, web apps for local culture, and the occasional algorithm library. Works at BGD Labs.
+> Software engineer based in Frankfurt am Main, Germany. Builds small useful things: Linux distributions, web apps for local culture, and the occasional algorithm library. Works at BGD Labs.
 
 ## Identity
 
@@ -30,21 +30,21 @@ TypeScript, Bun, Cloudflare Workers, Hono, HonoX, htmx, Tailwind CSS v4, Rust, S
 
 ## Projects
 
-### manjaro-sway — Linux distribution
+### manjaro-sway (Linux distribution)
 Manjaro Linux with Wayland, Sway and a lot of love. 806 stars, 30 forks.
 - Live: https://manjaro-sway.download
 - Source: https://github.com/manjaro-sway/manjaro-sway
 
-### museumsufer — multi-city culture monorepo
-Cloudflare Workers monorepo serving six public web apps that aggregate cultural programming. Five are multi-city verticals (museums, theater, concerts, lectures, cinema) served at `<city>.<apex>` subdomains, with the bare apex 302-redirecting to the nearest city by Cloudflare edge geolocation; landau.today is single-city. Cities currently modeled: Frankfurt, Hamburg, Darmstadt, Heidelberg. One hourly GitHub Action runs the hub scrape, per-app derive steps regenerate typed bundles committed to git, and Cloudflare redeploys on push — no DB on the read path (D1 only for request-time user writes). A city-expansion backlog maps every German city over 150k for staged rollout.
+### museumsufer (multi-city culture monorepo)
+Cloudflare Workers monorepo behind six public web apps for cultural programming. Five of them are multi-city verticals (museums, theater, concerts, lectures, cinema) served at `<city>.<apex>` subdomains; the bare apex 302-redirects to the nearest city by Cloudflare edge geolocation. landau.today covers a single city. Cities modeled so far are Frankfurt, Hamburg, Darmstadt and Heidelberg. An hourly GitHub Action runs the hub scrape, per-app derive steps regenerate typed bundles, and committing those to git triggers a Cloudflare redeploy. Nothing reads from a database on the hot path; D1 only takes request-time user writes. A backlog of city-expansion tickets maps every German city over 150k for staged rollout.
 - Source: https://github.com/boredland/museumsufer
 
 #### ins.museum
 Daily exhibitions and events for ~40 Frankfurt Museumsufer museums, extending to Hamburg (Kunsthalle, Museum für Kunst und Gewerbe, Deichtorhallen, SHMH houses). 15+ deterministic scrapers (Tribe Events, TYPO3 calendarize, schema.org microdata, WP REST + ACF, RSS, Kirby CMS), DeepL EN/FR translation, image proxy, distance sorting via RMV, fuzzy search, PWA.
-- Live: https://ins.museum (also https://museumsufer.app — SEO-primary alias pinned to Frankfurt)
+- Live: https://ins.museum (also https://museumsufer.app, an SEO-primary alias pinned to Frankfurt)
 
 #### ins.theater
-Hourly performance schedule across Frankfurt theaters — Schauspiel, Oper, Mousonturm, English Theatre, Komödie, Tigerpalast, the Reservix-fronted small houses, plus long-tail venues — alongside Hamburg houses. Editorial Programmheft styling.
+Hourly performance schedule across Frankfurt theaters (Schauspiel, Oper, Mousonturm, English Theatre, Komödie, Tigerpalast, the Reservix-fronted small houses, plus long-tail venues) alongside Hamburg houses. Editorial Programmheft styling.
 - Live: https://ins.theater
 
 #### konzert.haus
@@ -52,11 +52,11 @@ Classical, jazz, sacred, world, experimental and chamber concerts across Frankfu
 - Live: https://konzert.haus
 
 #### lichtspiel.haus
-Daily cinema programme across arthouse + repertory cinemas — DFF, Astor, Cinéma/Eldorado/Harmonie, Pupille, Mal seh'n, Murnau, Caligari, Filmforum Höchst, Kinopolis. TMDb-enriched posters and synopses, Rotten Tomatoes + IMDb ratings, film-strip date slider in a Wiener-Werkstätte / Saul-Bass register.
+Daily cinema programme across arthouse + repertory cinemas: DFF, Astor, Cinéma/Eldorado/Harmonie, Pupille, Mal seh'n, Murnau, Caligari, Filmforum Höchst, Kinopolis. TMDb-enriched posters and synopses, Rotten Tomatoes + IMDb ratings, film-strip date slider in a Wiener-Werkstätte / Saul-Bass register.
 - Live: https://lichtspiel.haus
 
 #### lehr.salon
-Daily index of public lectures, readings, and discussions — Polytechnische Gesellschaft, Haus am Dom, Jüdische Gemeinde, Literaturhaus, Bürgeruniversität, Sigmund-Freud-Institut, Denkbar and more. Cross-imports Vortrag-class events from the museums + theaters apps. Annotated-quarto identity.
+Daily index of public lectures, readings and discussions. Sources include the Polytechnische Gesellschaft, Haus am Dom, Jüdische Gemeinde, Literaturhaus, Bürgeruniversität, Sigmund-Freud-Institut, Denkbar and more. Cross-imports Vortrag-class events from the museums + theaters apps. Annotated-quarto identity.
 - Live: https://lehr.salon
 
 #### landau.today
@@ -79,7 +79,7 @@ GPX weather warnings as a PWA: one track, a pace-profile ETA, and a wake-up push
 - Source: https://github.com/boredland/wanderbar.fyi
 
 ### oritdidnthappen
-Pics or it didn't happen — BYOS event photo sharing. Guests upload straight into the host's own Google Drive or Dropbox. No login, no servers storing your photos. HonoX + Cloudflare Workers + D1.
+Pics or it didn't happen. BYOS event photo sharing. Guests upload straight into the host's own Google Drive or Dropbox. No login, no servers storing your photos. HonoX + Cloudflare Workers + D1.
 - Live: https://oritdidnthappen.pics
 - Source: https://github.com/boredland/oritdidnthappen
 
@@ -89,22 +89,22 @@ Baue teilbare, standortbasierte Schnitzeljagden mit Karte, Rätseln und geheimem
 - Source: https://github.com/boredland/schnitzeljaeger.in
 
 ### erbsenzaehler
-🌿 Erntetagebuch für Gemeinschaftsgärten — track harvests, log waterings, share with your garden crew.
+🌿 Erntetagebuch für Gemeinschaftsgärten: track harvests, log waterings, share with your garden crew.
 - Live: https://erbsenzaehler.in
 - Source: https://github.com/boredland/erbsenzaehler
 
 ### baustellenschild
-Baustellen in Frankfurt am Main — construction-site map for the city.
+Construction-site map for Frankfurt am Main.
 - Live: https://bauschild.jonas-strassel.de
 - Source: https://github.com/boredland/baustellenschild
 
 ### dumm-rum
-"Dumm rumstehen an Frankfurter Haltestellen seit 2026" — Frankfurt public-transport stop tool.
+"Dumm rumstehen an Frankfurter Haltestellen seit 2026". Frankfurt public-transport stop tool.
 - Live: https://dummrum.de
 - Source: https://github.com/boredland/dumm-rum
 
 ### leave-work
-Maximize your time off — vacation-day optimizer.
+Vacation-day optimizer. Maximize your time off.
 - Live: https://leave.work
 - Source: https://github.com/boredland/leave-work
 
