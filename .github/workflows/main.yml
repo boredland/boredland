@@ -1,4 +1,4 @@
-name: Generate Stats Images
+name: Generate Stats
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
         python3 -m pip install --upgrade pip setuptools wheel
         python3 -m pip install -r requirements.txt
 
-    - name: Generate images
+    - name: Generate stats, SVGs and page values
       run: |
         python3 --version
         python3 generate_images.py
@@ -47,6 +47,6 @@ jobs:
         git config --global user.name "github-stats"
         git config --global user.email "github-stats[bot]@users.noreply.github.com"
         git add .
-        git commit -m 'Update generated files' || true
+        git commit -m 'Update generated stats' || true
         git pull --rebase --autostash
         git push

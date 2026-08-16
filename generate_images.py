@@ -8,6 +8,8 @@ import aiohttp
 
 from github_stats import Stats
 
+LANGUAGE_ROWS = 8
+
 
 ################################################################################
 # Helper Functions
@@ -86,6 +88,100 @@ async def generate_languages(s: Stats) -> None:
         f.write(output)
 
 
+async def generate_index(s: Stats) -> None:
+    """
+    Write the aggregate counters and language shares into index.html.
+
+    The page is hand-written, so instead of templating it we patch only the
+    values the stats pipeline owns: elements carrying a data-stat attribute,
+    and the language list fenced between the languages:start/end markers.
+    :param s: Represents user's GitHub statistics
+    """
+    with open("index.html", "r", encoding="utf-8") as f:
+        output = f.read()
+
+    stats = {
+        "stars": f"{await s.stargazers:,}",
+        "forks": f"{await s.forks:,}",
+        "contributions": f"{await s.total_contributions:,}",
+        "repos": f"{len(await s.repos):,}",
+    }
+    for key, value in stats.items():
+        output, count = re.subn(
+            rf'(<span[^>]*data-stat="{key}"[^>]*>)[^<]*(</span>)',
+            lambda m: f"{m.group(1)}{value}{m.group(2)}",
+            output,
+        )
+        if not count:
+            raise RuntimeError(f'index.html has no data-stat="{key}" element')
+
+    languages = sorted(
+        (await s.languages).items(), reverse=True, key=lambda t: t[1].get("size")
+    )[:LANGUAGE_ROWS]
+    rows = ['      <ul class="loadout">']
+    for lang, data in languages:
+        prop = data.get("prop", 0)
+        color = data.get("color") or "#000000"
+        label = f"{prop:0.0f}%" if prop >= 1 else "&lt;1%"
+        rows.append(
+            f'        <li><span class="lang-name">{lang}</span>'
+            f'<span class="lang-bar"><span class="fill" '
+            f'style="width:{prop:0.2f}%;background:{color};color:{color}"></span></span>'
+            f'<span class="lang-pct">{label}</span></li>'
+        )
+    rows.append("      </ul>")
+
+    output, count = re.subn(
+        r"(<!-- languages:start[^>]*-->\n).*?(\s*<!-- languages:end -->)",
+        lambda m: m.group(1) + "\n".join(rows) + m.group(2),
+        output,
+        flags=re.DOTALL,
+    )
+    if not count:
+        raise RuntimeError("index.html has no languages:start/end markers")
+
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(output)
+
+
+async def generate_llms_txt(s: Stats) -> None:
+    """
+    Refresh the aggregate metrics block in llms.txt.
+    :param s: Represents user's GitHub statistics
+    """
+    with open("llms.txt", "r", encoding="utf-8") as f:
+        output = f.read()
+
+    languages = sorted(
+        (await s.languages).items(), reverse=True, key=lambda t: t[1].get("size")
+    )[:LANGUAGE_ROWS]
+    shares = ", ".join(
+        f"{lang} {data.get('prop', 0):0.0f}%"
+        if data.get("prop", 0) >= 1
+        else f"{lang} <1%"
+        for lang, data in languages
+    )
+    lines = [
+        f"- {await s.stargazers:,} stargazers across all owned repositories",
+        f"- {await s.forks:,} forks",
+        f"- {await s.total_contributions:,} lifetime contributions",
+        f"- {len(await s.repos):,} repositories with contributions",
+        f"- Languages by share of code: {shares}",
+    ]
+
+    output, count = re.subn(
+        r"(<!-- metrics:start[^>]*-->\n).*?(<!-- metrics:end -->)",
+        lambda m: m.group(1) + "\n".join(lines) + "\n" + m.group(2),
+        output,
+        flags=re.DOTALL,
+    )
+    if not count:
+        raise RuntimeError("llms.txt has no metrics:start/end markers")
+
+    with open("llms.txt", "w", encoding="utf-8") as f:
+        f.write(output)
+
+
 ################################################################################
 # Main Function
 ################################################################################
@@ -122,7 +218,12 @@ async def main() -> None:
             exclude_langs=excluded_langs,
             exclude_contributed_repos=exclude_contributed_repos,
         )
-        await asyncio.gather(generate_languages(s), generate_overview(s))
+        await asyncio.gather(
+            generate_languages(s),
+            generate_overview(s),
+            generate_index(s),
+            generate_llms_txt(s),
+        )
 
 
 if __name__ == "__main__":

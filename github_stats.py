@@ -270,6 +270,9 @@ class Stats(object):
         self._total_contributions: Optional[int] = None
         self._languages: Optional[Dict[str, Any]] = None
         self._repos: Optional[Set[str]] = None
+        self._stats_lock = asyncio.Lock()
+        self._stats_ready = False
+        self._contributions_lock = asyncio.Lock()
 
     async def to_str(self) -> str:
         """
@@ -290,7 +293,18 @@ Languages:
     async def get_stats(self) -> None:
         """
         Get lots of summary statistics using one big query. Sets many attributes
+
+        Guarded by a lock: the accumulators are zeroed on entry, so a second
+        concurrent caller would otherwise read a half-filled total (or 0) via
+        the properties, which check for None rather than completeness.
         """
+        async with self._stats_lock:
+            if self._stats_ready:
+                return
+            await self._fetch_stats()
+            self._stats_ready = True
+
+    async def _fetch_stats(self) -> None:
         log.info("Fetching repository overview for %s", self.username)
         self._stargazers = 0
         self._forks = 0
@@ -351,7 +365,7 @@ Languages:
 
                 for lang in repo.get("languages", {}).get("edges", []):
                     lang_name = lang.get("node", {}).get("name", "Other")
-                    languages = await self.languages
+                    languages = self._languages
                     if lang_name.lower() in exclude_langs_lower:
                         continue
                     if lang_name in languages:
@@ -397,9 +411,8 @@ Languages:
         """
         :return: total number of stargazers on user's repos
         """
-        if self._stargazers is not None:
-            return self._stargazers
-        await self.get_stats()
+        if not self._stats_ready:
+            await self.get_stats()
         assert self._stargazers is not None
         return self._stargazers
 
@@ -408,9 +421,8 @@ Languages:
         """
         :return: total number of forks on user's repos
         """
-        if self._forks is not None:
-            return self._forks
-        await self.get_stats()
+        if not self._stats_ready:
+            await self.get_stats()
         assert self._forks is not None
         return self._forks
 
@@ -419,9 +431,8 @@ Languages:
         """
         :return: summary of languages used by the user
         """
-        if self._languages is not None:
-            return self._languages
-        await self.get_stats()
+        if not self._stats_ready:
+            await self.get_stats()
         assert self._languages is not None
         return self._languages
 
@@ -430,7 +441,7 @@ Languages:
         """
         :return: summary of languages used by the user, with proportional usage
         """
-        if self._languages is None:
+        if not self._stats_ready:
             await self.get_stats()
         assert self._languages is not None
 
@@ -441,9 +452,8 @@ Languages:
         """
         :return: list of names of user's repos
         """
-        if self._repos is not None:
-            return self._repos
-        await self.get_stats()
+        if not self._stats_ready:
+            await self.get_stats()
         assert self._repos is not None
         return self._repos
 
@@ -451,10 +461,16 @@ Languages:
     async def total_contributions(self) -> int:
         """
         :return: count of user's total contributions as defined by GitHub
-        """
-        if self._total_contributions is not None:
-            return self._total_contributions
 
+        Same locking rationale as get_stats: the counter is zeroed before the
+        awaits that fill it, so an unguarded concurrent reader sees 0.
+        """
+        async with self._contributions_lock:
+            if self._total_contributions is not None:
+                return self._total_contributions
+            return await self._fetch_contributions()
+
+    async def _fetch_contributions(self) -> int:
         self._total_contributions = 0
         log.info("Fetching contribution years")
         years = (
