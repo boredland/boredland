@@ -76,13 +76,19 @@ class Queries(object):
                 if r_async.status >= 400:
                     body = await r_async.text()
                     log.error("GraphQL HTTP %d: %s", r_async.status, body[:200])
-                    return dict()
+                    raise RuntimeError(
+                        f"GraphQL query failed (HTTP {r_async.status}): {body[:200]}"
+                    )
                 result = await r_async.json()
                 if result is not None:
                     if "errors" in result:
                         log.warning("GraphQL response contains errors: %s", result["errors"])
+                    if result.get("data") is None:
+                        raise RuntimeError(
+                            f"GraphQL response carried no data: {str(result.get('errors'))[:200]}"
+                        )
                     return result
-            except Exception as e:
+            except (aiohttp.ClientError, asyncio.TimeoutError) as e:
                 log.error("aiohttp failed for GraphQL query: %s — falling back to requests (attempt %d/10)", e, attempt + 1)
                 try:
                     async with self.semaphore:
@@ -104,17 +110,26 @@ class Queries(object):
                         continue
                     if r_requests.status_code != 200:
                         log.error("GraphQL fallback HTTP %d: %s", r_requests.status_code, r_requests.text[:200])
-                        return dict()
-                    return r_requests.json()
-                except Exception as inner:
+                        raise RuntimeError(
+                            f"GraphQL query failed (HTTP {r_requests.status_code}): {r_requests.text[:200]}"
+                        )
+                    fallback_result = r_requests.json()
+                    if fallback_result.get("data") is None:
+                        raise RuntimeError(
+                            f"GraphQL response carried no data: {str(fallback_result.get('errors'))[:200]}"
+                        )
+                    return fallback_result
+                except (requests.RequestException, ValueError) as inner:
                     wait = min(60, 2 ** attempt)
                     log.warning("GraphQL fallback also failed: %s. Waiting %ds... (attempt %d/10)", inner, wait, attempt + 1)
                     await asyncio.sleep(wait)
                     continue
             break
 
-        log.error("GraphQL query failed after all attempts")
-        return dict()
+        raise RuntimeError(
+            "GraphQL query failed after all 10 attempts; refusing to continue "
+            "with no data. Check the GH_TOKEN secret, rate limits and network."
+        )
 
     @staticmethod
     def repos_overview(
@@ -326,7 +341,7 @@ Languages:
             )
             raw_results = raw_results if raw_results is not None else {}
 
-            viewer = raw_results.get("data", {}).get("viewer", {}) or {}
+            viewer = (raw_results.get("data") or {}).get("viewer") or {}
             self._name = viewer.get("name") or viewer.get("login") or "No Name"
             viewer_login = viewer.get("login")
             if viewer_login and viewer_login != self.username:
@@ -334,17 +349,11 @@ Languages:
                 self.username = viewer_login
                 self.queries.username = viewer_login
 
-            contrib_repos = (
-                raw_results.get("data", {})
-                .get("viewer", {})
-                .get("repositoriesContributedTo", {})
-            )
-            owned_repos = (
-                raw_results.get("data", {}).get("viewer", {}).get("repositories", {})
-            )
+            contrib_repos = viewer.get("repositoriesContributedTo") or {}
+            owned_repos = viewer.get("repositories") or {}
 
-            owned_nodes = owned_repos.get("nodes", [])
-            contrib_nodes = contrib_repos.get("nodes", []) if not self._exclude_contributed_repos else []
+            owned_nodes = owned_repos.get("nodes") or []
+            contrib_nodes = (contrib_repos.get("nodes") or []) if not self._exclude_contributed_repos else []
             owned_names = {r.get("nameWithOwner") for r in owned_nodes if r}
 
             for repo in owned_nodes + contrib_nodes:
@@ -360,11 +369,11 @@ Languages:
                 log.info("  Found repo: %s", name)
                 if name not in owned_names:
                     continue
-                self._stargazers += repo.get("stargazers").get("totalCount", 0)
+                self._stargazers += (repo.get("stargazers") or {}).get("totalCount", 0)
                 self._forks += repo.get("forkCount", 0)
 
-                for lang in repo.get("languages", {}).get("edges", []):
-                    lang_name = lang.get("node", {}).get("name", "Other")
+                for lang in (repo.get("languages") or {}).get("edges") or []:
+                    lang_name = (lang.get("node") or {}).get("name") or "Other"
                     languages = self._languages
                     if lang_name.lower() in exclude_langs_lower:
                         continue
@@ -375,7 +384,7 @@ Languages:
                         languages[lang_name] = {
                             "size": lang.get("size", 0),
                             "occurrences": 1,
-                            "color": lang.get("node", {}).get("color"),
+                            "color": (lang.get("node") or {}).get("color"),
                         }
 
             if owned_repos.get("pageInfo", {}).get(
@@ -393,7 +402,7 @@ Languages:
         log.info("Discovered %d repos total", len(self._repos))
         langs_total = sum([v.get("size", 0) for v in self._languages.values()])
         for k, v in self._languages.items():
-            v["prop"] = 100 * (v.get("size", 0) / langs_total)
+            v["prop"] = 100 * (v.get("size", 0) / langs_total) if langs_total else 0
 
     @property
     async def name(self) -> str:
@@ -473,25 +482,25 @@ Languages:
     async def _fetch_contributions(self) -> int:
         self._total_contributions = 0
         log.info("Fetching contribution years")
+        raw_years = await self.queries.query(Queries.contrib_years())
         years = (
-            (await self.queries.query(Queries.contrib_years()))
-            .get("data", {})
-            .get("viewer", {})
+            ((raw_years.get("data") or {}).get("viewer") or {})
             .get("contributionsCollection", {})
-            .get("contributionYears", [])
-        )
+            .get("contributionYears")
+        ) or []
+        if not years:
+            raise RuntimeError(
+                "GitHub API returned no contribution years; refusing to publish "
+                "a zeroed contribution count. Check the GH_TOKEN secret."
+            )
         log.info("Fetching contributions for years: %s", years)
-        by_year = (
-            (await self.queries.query(Queries.all_contribs(years)))
-            .get("data", {})
-            .get("viewer", {})
-            .values()
-        )
+        raw_by_year = await self.queries.query(Queries.all_contribs(years))
+        by_year = ((raw_by_year.get("data") or {}).get("viewer") or {}).values()
 
         for year in by_year:
-            self._total_contributions += year.get("contributionCalendar", {}).get(
-                "totalContributions", 0
-            )
+            self._total_contributions += (
+                year.get("contributionCalendar") or {}
+            ).get("totalContributions", 0)
         return cast(int, self._total_contributions)
 
 ###############################################################################

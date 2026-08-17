@@ -21,10 +21,29 @@ Do not hand-edit those regions; the next run overwrites them. Everything else in
 Removing a `data-stat` attribute or a marker comment fails the run loudly rather
 than silently skipping the update.
 
+A GitHub API call that cannot be answered now aborts the run instead of
+publishing zeros, so a failed workflow means "check the token or the API", not
+"the site has no stars". Transient rate limits and 5xx responses are still
+retried before giving up.
+
 Run it locally with:
 
 ```sh
 GITHUB_TOKEN="$(gh auth token)" GITHUB_ACTOR=boredland \
   EXCLUDED=boredland/boredland EXCLUDE_CONTRIBUTED_REPOS=false \
   uv run --with aiohttp --with requests python generate_images.py
+```
+
+| Variable | Purpose |
+| --- | --- |
+| `GITHUB_TOKEN` or `ACCESS_TOKEN` | personal access token; required |
+| `GITHUB_ACTOR` | user to collect stats for; required |
+| `EXCLUDED` | comma-separated `owner/repo` list to skip |
+| `EXCLUDED_LANGS` | comma-separated language names to skip |
+| `EXCLUDE_CONTRIBUTED_REPOS` | any value but `false` counts owned repos only |
+
+Run the tests with:
+
+```sh
+uv run --with pytest --with aiohttp --with requests python -m pytest -q
 ```
