@@ -6,7 +6,6 @@ import os
 from typing import Dict, List, Optional, Set, Any, cast
 
 import aiohttp
-import requests
 
 
 logging.basicConfig(
@@ -89,41 +88,10 @@ class Queries(object):
                         )
                     return result
             except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                log.error("aiohttp failed for GraphQL query: %s — falling back to requests (attempt %d/10)", e, attempt + 1)
-                try:
-                    async with self.semaphore:
-                        r_requests = requests.post(
-                            "https://api.github.com/graphql",
-                            headers=headers,
-                            json={"query": generated_query},
-                            timeout=30,
-                        )
-                    if r_requests.status_code in (429, 403):
-                        retry_after = int(r_requests.headers.get("Retry-After", 60))
-                        log.warning("GraphQL rate limited (HTTP %d). Waiting %ds... (attempt %d/10)", r_requests.status_code, retry_after, attempt + 1)
-                        await asyncio.sleep(retry_after)
-                        continue
-                    if r_requests.status_code >= 500:
-                        wait = min(60, 2 ** attempt)
-                        log.warning("GraphQL fallback HTTP %d (transient). Waiting %ds... (attempt %d/10)", r_requests.status_code, wait, attempt + 1)
-                        await asyncio.sleep(wait)
-                        continue
-                    if r_requests.status_code != 200:
-                        log.error("GraphQL fallback HTTP %d: %s", r_requests.status_code, r_requests.text[:200])
-                        raise RuntimeError(
-                            f"GraphQL query failed (HTTP {r_requests.status_code}): {r_requests.text[:200]}"
-                        )
-                    fallback_result = r_requests.json()
-                    if fallback_result.get("data") is None:
-                        raise RuntimeError(
-                            f"GraphQL response carried no data: {str(fallback_result.get('errors'))[:200]}"
-                        )
-                    return fallback_result
-                except (requests.RequestException, ValueError) as inner:
-                    wait = min(60, 2 ** attempt)
-                    log.warning("GraphQL fallback also failed: %s. Waiting %ds... (attempt %d/10)", inner, wait, attempt + 1)
-                    await asyncio.sleep(wait)
-                    continue
+                wait = min(60, 2 ** attempt)
+                log.warning("GraphQL transport error: %s. Waiting %ds... (attempt %d/10)", e, wait, attempt + 1)
+                await asyncio.sleep(wait)
+                continue
             break
 
         raise RuntimeError(
@@ -285,6 +253,7 @@ class Stats(object):
         self._total_contributions: Optional[int] = None
         self._languages: Optional[Dict[str, Any]] = None
         self._repos: Optional[Set[str]] = None
+        self._repo_counts: Optional[Dict[str, Dict[str, int]]] = None
         self._stats_lock = asyncio.Lock()
         self._stats_ready = False
         self._contributions_lock = asyncio.Lock()
@@ -325,6 +294,7 @@ Languages:
         self._forks = 0
         self._languages = dict()
         self._repos = set()
+        self._repo_counts = dict()
 
         exclude_langs_lower = {x.lower() for x in self._exclude_langs}
 
@@ -369,8 +339,11 @@ Languages:
                 log.info("  Found repo: %s", name)
                 if name not in owned_names:
                     continue
-                self._stargazers += (repo.get("stargazers") or {}).get("totalCount", 0)
-                self._forks += repo.get("forkCount", 0)
+                stars = (repo.get("stargazers") or {}).get("totalCount", 0)
+                forks = repo.get("forkCount", 0)
+                self._stargazers += stars
+                self._forks += forks
+                self._repo_counts[name] = {"stars": stars, "forks": forks}
 
                 for lang in (repo.get("languages") or {}).get("edges") or []:
                     lang_name = (lang.get("node") or {}).get("name") or "Other"
@@ -455,6 +428,16 @@ Languages:
         assert self._languages is not None
 
         return {k: v.get("prop", 0) for (k, v) in self._languages.items()}
+
+    @property
+    async def repo_counts(self) -> Dict[str, Dict[str, int]]:
+        """
+        :return: stars and forks per owned repository, keyed by nameWithOwner
+        """
+        if not self._stats_ready:
+            await self.get_stats()
+        assert self._repo_counts is not None
+        return self._repo_counts
 
     @property
     async def repos(self) -> Set[str]:

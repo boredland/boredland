@@ -13,8 +13,10 @@ handling and no-data guards inside query are the code actually under test.
 import asyncio
 from typing import Any, Dict, List, Optional
 
+import aiohttp
 import pytest
 
+import generate_images
 import github_stats
 
 
@@ -35,17 +37,20 @@ class _FakeResponse:
 class _FakeSession:
     """Answers every post with the next queued response, repeating the last."""
 
-    def __init__(self, responses: List[_FakeResponse]) -> None:
+    def __init__(self, responses: List[Any]) -> None:
         self._responses = responses
         self.calls = 0
 
     async def post(self, *args: Any, **kwargs: Any) -> _FakeResponse:
         index = min(self.calls, len(self._responses) - 1)
         self.calls += 1
-        return self._responses[index]
+        queued = self._responses[index]
+        if isinstance(queued, Exception):
+            raise queued
+        return queued
 
 
-def _stats(*responses: _FakeResponse) -> github_stats.Stats:
+def _stats(*responses: Any) -> github_stats.Stats:
     return github_stats.Stats("someone", "token", _FakeSession(list(responses)))
 
 
@@ -108,6 +113,36 @@ def test_exhausted_retries_raise(monkeypatch: pytest.MonkeyPatch) -> None:
         asyncio.run(_read(stats, "stargazers"))
 
 
+def test_transport_error_is_retried_then_raises(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Transport failures retry, and a persistent one ends in a raise."""
+    monkeypatch.setattr(github_stats.asyncio, "sleep", _no_sleep)
+    session = _FakeSession([aiohttp.ClientError("connection reset")])
+    stats = github_stats.Stats("someone", "token", session)
+
+    with pytest.raises(RuntimeError):
+        asyncio.run(_read(stats, "stargazers"))
+
+    assert session.calls == 10
+
+
+def test_transport_error_recovers_when_the_retry_succeeds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(github_stats.asyncio, "sleep", _no_sleep)
+    repo = {
+        "nameWithOwner": "someone/repo",
+        "isFork": False,
+        "stargazers": {"totalCount": 5},
+        "forkCount": 0,
+        "languages": {"edges": [_language_edge(10)]},
+    }
+    stats = _stats(aiohttp.ClientError("flaky"), _ok(_repo_payload(repo)))
+
+    assert asyncio.run(_read(stats, "stargazers")) == 5
+
+
 def test_zero_size_languages_do_not_divide_by_zero() -> None:
     repo = {
         "nameWithOwner": "someone/repo",
@@ -160,3 +195,54 @@ async def _read(stats: github_stats.Stats, attribute: str) -> Any:
     by exactly one asyncio.run to keep every lock on a single event loop.
     """
     return await getattr(stats, attribute)
+
+
+def test_ordinal_labels_match_arcade_format() -> None:
+    labels = [generate_images.ordinal(n) for n in (1, 2, 3, 4, 11, 12, 13, 21, 22, 23)]
+
+    assert labels == [
+        "1ST",
+        "2ND",
+        "3RD",
+        "4TH",
+        "11TH",
+        "12TH",
+        "13TH",
+        "21ST",
+        "22ND",
+        "23RD",
+    ]
+
+
+def test_repo_counts_are_recorded_per_repo() -> None:
+    repo = {
+        "nameWithOwner": "someone/repo",
+        "isFork": False,
+        "stargazers": {"totalCount": 9},
+        "forkCount": 4,
+        "languages": {"edges": [_language_edge(10)]},
+    }
+    stats = _stats(_ok(_repo_payload(repo)))
+
+    counts = asyncio.run(_read(stats, "repo_counts"))
+
+    assert counts["someone/repo"] == {"stars": 9, "forks": 4}
+
+
+def test_llms_prose_counts_are_refreshed() -> None:
+    text = (
+        "### thing (a project)\n"
+        "Does things. 806 stars, 30 forks.\n"
+        "- Source: https://github.com/someone/repo\n"
+        "\n"
+        "### other (untouched)\n"
+        "Also does things. 5 stars, 1 forks.\n"
+        "- Source: https://github.com/someone/other\n"
+    )
+
+    refreshed = generate_images._refresh_repo_counts_prose(
+        text, {"someone/repo": {"stars": 805, "forks": 30}}
+    )
+
+    assert "805 stars, 30 forks." in refreshed
+    assert "5 stars, 1 forks." in refreshed

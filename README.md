@@ -18,6 +18,7 @@ number on the site. It writes four things from one API fetch:
 
 Do not hand-edit those regions; the next run overwrites them. Everything else in
 `index.html` and `llms.txt`, including the high-score table, is hand-maintained.
+
 Removing a `data-stat` attribute or a marker comment fails the run loudly rather
 than silently skipping the update.
 
@@ -31,7 +32,7 @@ Run it locally with:
 ```sh
 GITHUB_TOKEN="$(gh auth token)" GITHUB_ACTOR=boredland \
   EXCLUDED=boredland/boredland EXCLUDE_CONTRIBUTED_REPOS=false \
-  uv run --with aiohttp --with requests python generate_images.py
+  uv run --with aiohttp python generate_images.py
 ```
 
 | Variable | Purpose |
@@ -45,5 +46,5 @@ GITHUB_TOKEN="$(gh auth token)" GITHUB_ACTOR=boredland \
 Run the tests with:
 
 ```sh
-uv run --with pytest --with aiohttp --with requests python -m pytest -q
+uv run --with pytest --with aiohttp python -m pytest -q
 ```
