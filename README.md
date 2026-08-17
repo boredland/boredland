@@ -13,12 +13,18 @@ number on the site. It writes four things from one API fetch:
 | Output | What is replaced |
 | --- | --- |
 | `generated/overview.svg`, `generated/languages.svg` | whole file, from `templates/` |
-| `index.html` | elements with `data-stat="..."`, and the list between the `languages:start/end` comments |
-| `llms.txt` | the block between the `metrics:start/end` comments |
+| `index.html` | elements with `data-stat="..."`, the list between the `languages:start/end` comments, and the table between the `hiscores:start/end` comments |
+| `llms.txt` | the block between the `metrics:start/end` comments, and the "N stars, M forks" clauses in the project prose |
 
 Do not hand-edit those regions; the next run overwrites them. Everything else in
-`index.html` and `llms.txt`, including the high-score table, is hand-maintained.
+`index.html` and `llms.txt` is hand-maintained.
 
+The high-score table is generated from `projects.json`, which holds the editorial
+part: which projects appear, their label, link, initials and live-star. Score is
+`stars * 1000 + forks * 100` and ordering follows it, so ranks track reality
+instead of drifting. Entries whose `repo` is absent from the stats fetch (forks
+and contributed repos are excluded by the query) fail the run loudly; set `repo`
+to `null` and give explicit `stars`/`forks` for those.
 Removing a `data-stat` attribute or a marker comment fails the run loudly rather
 than silently skipping the update.
 

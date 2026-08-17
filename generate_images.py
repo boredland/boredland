@@ -1,14 +1,19 @@
 #!/usr/bin/python3
 
 import asyncio
+import json
 import os
 import re
 
 import aiohttp
 
+from typing import Dict
+
 from github_stats import Stats
 
 LANGUAGE_ROWS = 8
+STARS_WEIGHT = 1000
+FORKS_WEIGHT = 100
 
 
 ################################################################################
@@ -88,6 +93,25 @@ async def generate_languages(s: Stats) -> None:
         f.write(output)
 
 
+def _refresh_repo_counts_prose(text: str, counts: Dict[str, Dict[str, int]]) -> str:
+    """Update the "N stars, M forks" clauses in llms.txt project prose.
+
+    The prose is hand-written; only the counts are owned by the pipeline, so
+    each clause is rewritten in place next to the Source link naming its repo.
+    """
+    for repo, data in counts.items():
+        pattern = (
+            r"(\d+) stars, (\d+) forks\.((?:(?!\n### ).)*?Source: https://github\.com/"
+            + re.escape(repo)
+            + r")"
+        )
+        replacement = (
+            f"{data['stars']} stars, {data['forks']} forks." + r"\3"
+        )
+        text = re.sub(pattern, replacement, text, flags=re.DOTALL)
+    return text
+
+
 async def generate_index(s: Stats) -> None:
     """
     Write the aggregate counters and language shares into index.html.
@@ -144,6 +168,85 @@ async def generate_index(s: Stats) -> None:
         f.write(output)
 
 
+def ordinal(position: int) -> str:
+    """Render an arcade-style rank label: 1 -> 1ST, 22 -> 22ND."""
+    if position % 100 in (11, 12, 13):
+        suffix = "TH"
+    else:
+        suffix = {1: "ST", 2: "ND", 3: "RD"}.get(position % 10, "TH")
+    return f"{position}{suffix}"
+
+
+async def generate_hiscores(s: Stats) -> None:
+    """
+    Rebuild the high-score table in index.html from live star and fork counts.
+
+    Rank and score were hand-maintained and drifted from reality. projects.json
+    holds the editorial part (which projects appear, their labels and links);
+    the score is stars * STARS_WEIGHT + forks * FORKS_WEIGHT, matching the
+    formula the hand-written table used.
+    :param s: Represents user's GitHub statistics
+    """
+    with open("projects.json", "r", encoding="utf-8") as f:
+        projects = json.load(f)
+
+    counts = await s.repo_counts
+    ranked = []
+    for order, project in enumerate(projects):
+        repo = project.get("repo")
+        if repo and repo not in counts:
+            raise RuntimeError(
+                f"projects.json maps {project['name']} to {repo}, which the stats "
+                "fetch did not return (forks and contributed repos are excluded). "
+                "Fix the mapping or set repo to null."
+            )
+        stats = counts.get(repo) if repo else None
+        stars = stats["stars"] if stats else project.get("stars", 0)
+        forks = stats["forks"] if stats else project.get("forks", 0)
+        ranked.append((-(stars * STARS_WEIGHT + forks * FORKS_WEIGHT), order, project))
+    ranked.sort()
+
+    rows = ['      <ol class="hsc">']
+    for position, (negative_score, _, project) in enumerate(ranked, start=1):
+        classes = "hsc-row hsc-1" if position == 1 else "hsc-row"
+        star = '<span class="live-star">&#9733;</span>' if project.get("live") else ""
+        rows.append(
+            f'        <li class="{classes}">\n'
+            f'          <a href="{project["url"]}" target="_blank" rel="noopener">\n'
+            f'            <span class="col-rank">{ordinal(position)}</span>\n'
+            f'            <span class="col-score">{-negative_score:07,}</span>\n'
+            f'            <span class="col-name">{star}{project["name"]}</span>\n'
+            f'            <span class="col-init">{project["init"]}</span>\n'
+            f"          </a>\n"
+            f"        </li>"
+        )
+    rows.append("      </ol>")
+
+    with open("index.html", "r", encoding="utf-8") as f:
+        output = f.read()
+
+    output, count = re.subn(
+        r"(<!-- hiscores:start[^>]*-->\n).*?(\s*<!-- hiscores:end -->)",
+        lambda m: m.group(1) + "\n".join(rows) + m.group(2),
+        output,
+        flags=re.DOTALL,
+    )
+    if not count:
+        raise RuntimeError("index.html has no hiscores:start/end markers")
+
+    with open("index.html", "w", encoding="utf-8") as f:
+        f.write(output)
+
+
+async def generate_index_html(s: Stats) -> None:
+    """
+    Apply both index.html rewrites in sequence.
+    :param s: Represents user's GitHub statistics
+    """
+    await generate_index(s)
+    await generate_hiscores(s)
+
+
 async def generate_llms_txt(s: Stats) -> None:
     """
     Refresh the aggregate metrics block in llms.txt.
@@ -168,6 +271,8 @@ async def generate_llms_txt(s: Stats) -> None:
         f"- {len(await s.repos):,} repositories with contributions",
         f"- Languages by share of code: {shares}",
     ]
+
+    output = _refresh_repo_counts_prose(output, await s.repo_counts)
 
     output, count = re.subn(
         r"(<!-- metrics:start[^>]*-->\n).*?(<!-- metrics:end -->)",
@@ -221,7 +326,7 @@ async def main() -> None:
         await asyncio.gather(
             generate_languages(s),
             generate_overview(s),
-            generate_index(s),
+            generate_index_html(s),
             generate_llms_txt(s),
         )
 

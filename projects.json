@@ -1,0 +1,165 @@
+[
+  {
+    "name": "MANJARO-SWAY",
+    "url": "https://manjaro-sway.download",
+    "init": "MJS",
+    "live": true,
+    "repo": "manjaro-sway/manjaro-sway"
+  },
+  {
+    "name": "SAFEROUND",
+    "url": "https://github.com/boredland/saferound",
+    "init": "SFR",
+    "live": false,
+    "repo": "boredland/saferound"
+  },
+  {
+    "name": "TRINKHALLEN-APP",
+    "url": "https://trinkhallen.app",
+    "init": "TKA",
+    "live": true,
+    "repo": "boredland/trinkhallen-app"
+  },
+  {
+    "name": "ACTION-COMMIT-STORE",
+    "url": "https://github.com/boredland/action-commit-store",
+    "init": "ACS",
+    "live": false,
+    "repo": "boredland/action-commit-store"
+  },
+  {
+    "name": "KERNEL-INFO",
+    "url": "https://github.com/boredland/kernel-info",
+    "init": "KRN",
+    "live": false,
+    "repo": "boredland/kernel-info"
+  },
+  {
+    "name": "AUFTEILUNG",
+    "url": "https://github.com/boredland/aufteilung",
+    "init": "AUF",
+    "live": false,
+    "repo": null,
+    "stars": 1,
+    "forks": 1
+  },
+  {
+    "name": "DOWWNTIME",
+    "url": "https://github.com/boredland/dowwntime",
+    "init": "DWN",
+    "live": false,
+    "repo": "boredland/dowwntime"
+  },
+  {
+    "name": "DUMM-RUM",
+    "url": "https://dummrum.de",
+    "init": "DUM",
+    "live": true,
+    "repo": "boredland/dumm-rum"
+  },
+  {
+    "name": "ORITDIDNTHAPPEN",
+    "url": "https://oritdidnthappen.pics",
+    "init": "ODH",
+    "live": true,
+    "repo": "boredland/oritdidnthappen"
+  },
+  {
+    "name": "PDF-UNLOCK",
+    "url": "https://pdf-unlock.jonas-strassel.de/",
+    "init": "PDU",
+    "live": true,
+    "repo": "boredland/pdf-unlock"
+  },
+  {
+    "name": "ERBSENZAEHLER",
+    "url": "https://erbsenzaehler.in",
+    "init": "EBZ",
+    "live": true,
+    "repo": "boredland/erbsenzaehler"
+  },
+  {
+    "name": "INS.MUSEUM",
+    "url": "https://ins.museum",
+    "init": "INM",
+    "live": true,
+    "repo": "boredland/museumsufer"
+  },
+  {
+    "name": "INS.THEATER",
+    "url": "https://ins.theater",
+    "init": "INT",
+    "live": true,
+    "repo": "boredland/museumsufer"
+  },
+  {
+    "name": "KONZERT.HAUS",
+    "url": "https://konzert.haus",
+    "init": "KNH",
+    "live": true,
+    "repo": "boredland/museumsufer"
+  },
+  {
+    "name": "LICHTSPIEL.HAUS",
+    "url": "https://lichtspiel.haus",
+    "init": "LSH",
+    "live": true,
+    "repo": "boredland/museumsufer"
+  },
+  {
+    "name": "LEHR.SALON",
+    "url": "https://lehr.salon",
+    "init": "LHS",
+    "live": true,
+    "repo": "boredland/museumsufer"
+  },
+  {
+    "name": "LANDAU.TODAY",
+    "url": "https://landau.today",
+    "init": "LDU",
+    "live": true,
+    "repo": "boredland/museumsufer"
+  },
+  {
+    "name": "WERK-REVIEW",
+    "url": "https://werk.review",
+    "init": "WRV",
+    "live": true,
+    "repo": "boredland/werk-review"
+  },
+  {
+    "name": "LEAVE-WORK",
+    "url": "https://leave.work",
+    "init": "LVW",
+    "live": true,
+    "repo": null
+  },
+  {
+    "name": "WANDERBAR.FYI",
+    "url": "https://wanderbar.fyi",
+    "init": "WBR",
+    "live": true,
+    "repo": null
+  },
+  {
+    "name": "SCHNITZELJAEGER",
+    "url": "https://schnitzeljaeger.in",
+    "init": "SJG",
+    "live": true,
+    "repo": null
+  },
+  {
+    "name": "BAUSTELLENSCHILD",
+    "url": "https://bauschild.jonas-strassel.de",
+    "init": "BSD",
+    "live": true,
+    "repo": null
+  },
+  {
+    "name": "NOISE",
+    "url": "https://noise.jonas-strassel.de/",
+    "init": "NSE",
+    "live": true,
+    "repo": "boredland/noise"
+  }
+]
