@@ -43,9 +43,24 @@
       "knowsAbout": ["TypeScript", "Rust", "Linux", "Cloudflare Workers", "Wayland", "Sway", "Bun", "Hono"],
       "sameAs": [
         "https://github.com/boredland",
+        "https://social.linux.pizza/@boredland",
         "https://twitter.com/boredland069",
+        "https://x.com/boredland069",
         "https://www.linkedin.com/in/jonas-strasse%E2%80%8Al-392194138/",
+        "https://discordapp.com/users/boredland#3034",
         "https://matrix.to/#/@boredland:matrix.org"
+      ],
+      "identifier": [
+        {
+          "@type": "PropertyValue",
+          "propertyID": "ENS",
+          "value": "boredland.eth"
+        },
+        {
+          "@type": "PropertyValue",
+          "propertyID": "Ethereum address",
+          "value": "0xE971c147ea08bF4390684c8773Da3b0861DE85bD"
+        }
       ]
     }
     </script>
@@ -74,6 +89,7 @@
         --orange:   #ff8800;
         --pink:     #ffb8ff;
         --purple:   #a020f0;
+        --green:    #44dd44;
       }
 
       * { box-sizing: border-box; }
@@ -315,10 +331,12 @@
       .char-row:nth-child(3) .ghost-sprite { animation-delay: 0.2s; }
       .char-row:nth-child(4) .ghost-sprite { animation-delay: 0.3s; }
       .char-row:nth-child(5) .ghost-sprite { animation-delay: 0.4s; }
+      .char-row:nth-child(6) .ghost-sprite { animation-delay: 0.5s; }
       @keyframes ghost-bob {
         0%, 100% { transform: translateY(0); }
         50%      { transform: translateY(-2px); }
       }
+      .gh-green  { color: var(--green); }
       .gh-red    { color: var(--red); }
       .gh-pink   { color: var(--pink); }
       .gh-cyan   { color: var(--cyan); }
@@ -635,6 +653,17 @@
             <span class="char-name">GITHUB</span>
             <span class="char-handle">@boredland</span>
             <span class="char-pts"><span class="pts-num" data-stat="stars">1,141</span>STARS</span>
+          </a>
+        </li>
+        <li>
+          <a class="char-row" href="https://social.linux.pizza/@boredland" target="_blank" rel="me noopener">
+            <svg class="ghost-sprite gh-green" viewBox="0 0 8 8" aria-hidden="true">
+              <path fill="currentColor" d="M2 0h4v1H1v1H0v5h1v1h1v-1h1v1h1v-1h1v1h1v-1h1v-1h1V2H7V1H6z"/>
+              <rect x="2" y="2" width="1" height="2" fill="#fff"/><rect x="5" y="2" width="1" height="2" fill="#fff"/>
+              <rect x="2" y="3" width="1" height="1" fill="#2121de"/><rect x="5" y="3" width="1" height="1" fill="#2121de"/>
+            </svg>
+            <span class="char-name">MASTODON</span>
+            <span class="char-handle">@boredland@social.linux.pizza</span>
           </a>
         </li>
         <li>
