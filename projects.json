@@ -161,5 +161,19 @@
     "init": "NSE",
     "live": true,
     "repo": "boredland/noise"
+  },
+  {
+    "name": "STOERUNGSMELDER",
+    "url": "https://vodafone.jonas-strassel.de",
+    "init": "VSM",
+    "live": true,
+    "repo": "boredland/vodafone"
+  },
+  {
+    "name": "KONJUNKTIV",
+    "url": "https://konjunktiv.jonas-strassel.de",
+    "init": "KNJ",
+    "live": true,
+    "repo": "boredland/konjunktiv"
   }
 ]

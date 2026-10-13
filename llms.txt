@@ -115,10 +115,20 @@ Browser-based audio noise reduction powered by DeepFilterNet3, running entirely 
 - Live: https://noise.jonas-strassel.de/
 - Source: https://github.com/boredland/noise
 
+### konjunktiv
+Rewrites German first-person statements into reported speech (indirekte Rede, Konjunktiv I with Konjunktiv II fallback). A fine-tuned Flan-T5 model running entirely client-side via Transformers.js and ONNX Runtime Web; no text leaves the browser, and the page works offline after the first load.
+- Live: https://konjunktiv.jonas-strassel.de
+- Source: https://github.com/boredland/konjunktiv
+
 ### pdf-unlock
 Unlock password-protected PDFs in the browser using WebAssembly. No server upload.
 - Live: https://pdf-unlock.jonas-strassel.de/
 - Source: https://github.com/boredland/pdf-unlock
+
+### vodafone
+Vodafone Störungsmelder: checks Vodafone's outage service for a German address every 5 minutes, records outage history for availability statistics, and sends Web Push or double-opt-in email alerts when a fault opens or resolves. Cloudflare Workers + Hono + D1. No accounts, no tracking.
+- Live: https://vodafone.jonas-strassel.de
+- Source: https://github.com/boredland/vodafone
 
 ### dowwntime
 Downtime checks, easy as pie.
