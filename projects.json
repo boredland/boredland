@@ -29,10 +29,10 @@
   },
   {
     "name": "KERNEL-INFO",
-    "url": "https://github.com/boredland/kernel-info",
+    "url": "https://kernel.manjaro.download/",
     "init": "KRN",
-    "live": false,
-    "repo": "boredland/kernel-info"
+    "live": true,
+    "repo": "manjaro-sway/kernel-info"
   },
   {
     "name": "AUFTEILUNG",
@@ -139,21 +139,21 @@
     "url": "https://wanderbar.fyi",
     "init": "WBR",
     "live": true,
-    "repo": null
+    "repo": "boredland/wanderbar.fyi"
   },
   {
     "name": "SCHNITZELJAEGER",
     "url": "https://schnitzeljaeger.in",
     "init": "SJG",
     "live": true,
-    "repo": null
+    "repo": "boredland/schnitzeljaeger.in"
   },
   {
     "name": "BAUSTELLENSCHILD",
     "url": "https://bauschild.jonas-strassel.de",
     "init": "BSD",
     "live": true,
-    "repo": null
+    "repo": "boredland/baustellenschild"
   },
   {
     "name": "NOISE",
@@ -175,5 +175,61 @@
     "init": "KNJ",
     "live": true,
     "repo": "boredland/konjunktiv"
+  },
+  {
+    "name": "TELEKOM-STOERUNG",
+    "url": "https://telekom.jonas-strassel.de",
+    "init": "TSM",
+    "live": true,
+    "repo": "boredland/telekom"
+  },
+  {
+    "name": "OPEN-RTS",
+    "url": "https://boredland.github.io/generals2/",
+    "init": "GN2",
+    "live": true,
+    "repo": "boredland/generals2"
+  },
+  {
+    "name": "SLOPDUEL",
+    "url": "https://slopduel.app",
+    "init": "SLD",
+    "live": true,
+    "repo": null
+  },
+  {
+    "name": "PARTYPLANERIN",
+    "url": "https://partyplaner.in",
+    "init": "PPL",
+    "live": true,
+    "repo": null
+  },
+  {
+    "name": "MJR.SH",
+    "url": "https://mjr.sh",
+    "init": "MJR",
+    "live": true,
+    "repo": null
+  },
+  {
+    "name": "TRINKHALLEN-DATA",
+    "url": "https://github.com/boredland/trinkhallen-data",
+    "init": "TKD",
+    "live": false,
+    "repo": "boredland/trinkhallen-data"
+  },
+  {
+    "name": "FRANKFURT-HISTORY",
+    "url": "https://github.com/boredland/frankfurt-history",
+    "init": "FFH",
+    "live": false,
+    "repo": "boredland/frankfurt-history"
+  },
+  {
+    "name": "FETCH-PROXY",
+    "url": "https://github.com/boredland/fetch-proxy",
+    "init": "FPX",
+    "live": false,
+    "repo": "boredland/fetch-proxy"
   }
 ]
